@@ -12,7 +12,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
       bash ca-certificates coreutils findutils fontconfig gosu iproute2 \
       libasound2t64 libavc1394-0 libfreetype6 libgif7 libiec61883-0 \
-      libjpeg-turbo8 libnsl2 libpng16-16t64 libraw1394-11 libtiff6 \
+      libharfbuzz0b libjpeg-turbo8 libnsl2 libpng16-16t64 libraw1394-11 libtiff6 \
       libva2 libva-drm2 libvpl2 libx11-6 libxext6 libxi6 libxrender1 \
       libxtst6 intel-media-va-driver-non-free mesa-va-drivers mesa-vulkan-drivers openjdk-11-jre-headless \
       procps tini tzdata && rm -rf /var/lib/apt/lists/*
