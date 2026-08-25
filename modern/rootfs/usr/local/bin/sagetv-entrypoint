@@ -8,6 +8,16 @@ if [[ ! -f "$home/Sage.jar" ]]; then
   cp -a /usr/local/share/sagetv-dist/. "$home/"
 fi
 test -f "$home/Sage.jar" || { echo "ERROR: Sage.jar missing"; exit 30; }
+# Existing appdata may contain the legacy launcher that writes /var/run and
+# discards container JVM settings. Preserve a user copy once, then install the
+# release-matched launcher on every image upgrade.
+if ! cmp -s /usr/local/share/sagetv-dist/startsagecore "$home/startsagecore"; then
+  if [[ -f "$home/startsagecore" && ! -f "$home/startsagecore.pre-u26-container" ]]; then
+    cp -a "$home/startsagecore" "$home/startsagecore.pre-u26-container"
+  fi
+  cp /usr/local/share/sagetv-dist/startsagecore "$home/startsagecore"
+  echo "SageTV launcher updated from pinned image artifact"
+fi
 test -x "$home/startsagecore" || chmod 0755 "$home/startsagecore"
 if [[ -n "${TZ:-}" && -e "/usr/share/zoneinfo/${TZ}" ]]; then ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime; fi
 getent group "$gid" >/dev/null || groupadd -g "$gid" sagetv-runtime
