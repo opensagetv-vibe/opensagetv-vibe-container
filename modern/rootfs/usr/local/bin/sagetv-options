@@ -16,6 +16,22 @@ if enabled "${OPT_COMSKIP:-Y}"; then
   [[ -e /opt/sagetv/comskip/comskip.ini ]] || cp /usr/local/share/sagetv-options/comskip/comskip.ini /opt/sagetv/comskip/comskip.ini
   chmod 0755 /opt/sagetv/comskip/comskip
 fi
+mkdir -p "$home/JARs" "$home/.config/xmltv-examples"
+cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
+cp -n /usr/local/share/sagetv-options/xmltv/config-examples/* "$home/.config/xmltv-examples/" 2>/dev/null || true
+# XMLTV is installed but intentionally not selected in Sage.properties. It has
+# no license requirement; users opt in by selecting/configuring the provider.
+if enabled "${MIM_ENABLED:-false}"; then
+  [[ -e "$home/ffmpeg.stock" ]] || mv "$home/ffmpeg" "$home/ffmpeg.stock"
+  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real "$home/ffmpeg.real"
+  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe "$home/ffprobe"
+  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg_MIM "$home/ffmpeg"
+  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real.ini "$home/ffmpeg.real.ini"
+  chmod 0755 "$home/ffmpeg" "$home/ffmpeg.real" "$home/ffprobe"
+elif [[ -e "$home/ffmpeg.stock" ]]; then
+  cp "$home/ffmpeg.stock" "$home/ffmpeg"
+  chmod 0755 "$home/ffmpeg"
+fi
 if [[ -n "${LICENCE_DATA:-}" ]]; then
   printf '%s' "$LICENCE_DATA" > "$home/activkey"
   chmod 0600 "$home/activkey"

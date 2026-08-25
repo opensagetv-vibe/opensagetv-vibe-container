@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN useradd --system --create-home --home-dir /opt/sagetv --shell /bin/bash sagetv \
  && mkdir -p /usr/local/share/sagetv-dist /opt/sagetv/server /var/media /var/mediaext /var/tv
 COPY artifacts/sagetv-server-x86_64.tar.gz /tmp/core.tar.gz
+COPY artifacts/ffmpeg-mim/ /usr/local/share/sagetv-options/ffmpeg-mim/
+COPY artifacts/xmltv/ /usr/local/share/sagetv-options/xmltv/
 RUN tar -xzf /tmp/core.tar.gz -C /usr/local/share/sagetv-dist && rm /tmp/core.tar.gz \
  && test -f /usr/local/share/sagetv-dist/Sage.jar
 COPY modern/rootfs/ /
