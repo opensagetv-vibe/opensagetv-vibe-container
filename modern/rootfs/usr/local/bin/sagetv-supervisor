@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -uo pipefail
+home="${SAGETV_HOME:-/opt/sagetv/server}"; uid="${PUID:-99}"; gid="${PGID:-100}"
+delay="${SAGETV_RESTART_DELAY:-3}"; child=""; stopping=0
+stop_child() { stopping=1; [[ -n "$child" ]] && kill -TERM -- "-$child" 2>/dev/null || true; }
+trap stop_child TERM INT HUP QUIT
+while (( ! stopping )); do
+  printf '%s supervisor: starting SageTV\n' "$(date -Is)" | tee -a "$home/sagetv-supervisor.log"
+  gosu "$uid:$gid" setsid "$home/startsagecore" & child=$!
+  wait "$child"; rc=$?; child=""
+  (( stopping )) && exit 0
+  printf '%s supervisor: unexpected exit rc=%s; restarting in %ss\n' "$(date -Is)" "$rc" "$delay" | tee -a "$home/sagetv-supervisor.log"
+  sleep "$delay"
+done

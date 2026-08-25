@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+home="${SAGETV_HOME:-/opt/sagetv/server}"
+uid="${PUID:-99}"; gid="${PGID:-100}"
+mkdir -p "$home" /var/media /var/mediaext /var/tv
+if [[ ! -f "$home/Sage.jar" ]]; then
+  echo "Initializing clean SageTV appdata from pinned image artifact"
+  cp -a /usr/local/share/sagetv-dist/. "$home/"
+fi
+test -f "$home/Sage.jar" || { echo "ERROR: Sage.jar missing"; exit 30; }
+test -x "$home/startsagecore" || chmod 0755 "$home/startsagecore"
+if [[ -n "${TZ:-}" && -e "/usr/share/zoneinfo/${TZ}" ]]; then ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime; fi
+getent group "$gid" >/dev/null || groupadd -g "$gid" sagetv-runtime
+usermod -o -u "$uid" sagetv 2>/dev/null || true
+usermod -g "$gid" sagetv 2>/dev/null || true
+if [[ "${OPT_SETPERMS:-Y}" =~ ^[Yy1Tt] ]]; then chown -R "$uid:$gid" /opt/sagetv; fi
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+export JAVAMEM="-Xmx${JAVA_MEM_MB:-2048}m"
+export JAVAOPTS="${JAVAOPTS:-} -XX:ErrorFile=${home}/hs_err_pid%p.log -XX:+CreateCoredumpOnCrash"
+export LD_LIBRARY_PATH="$home${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+echo "SageTV Ubuntu 26 Java 11; MIM_ENABLED=${MIM_ENABLED:-false}; HARDWARE_DECODE=${HARDWARE_DECODE:-true}"
+/usr/local/bin/gpu-check || true
+cd "$home"
+exec /usr/local/bin/sagetv-supervisor

@@ -6,3 +6,5 @@ runSeanServer*.sh
 
 
 *.lnk
+artifacts/*.tar.gz
+output/

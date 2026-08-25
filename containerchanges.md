@@ -25,3 +25,12 @@
 - ODCT: update to get latest ODCT release from Github
 - Templates: update to support all new containers
 - BuildScripts: updated to include all containers
+# Ubuntu 26 GPU / Java 11 — development
+
+- Added pinned Core artifact installation; removed runtime `latest` downloads.
+- Added production and debug targets built from the same Ubuntu 26.04 source.
+- Added in-container SageTV restart supervision and clean first-run initialization.
+- Added Intel QSV/AMD VAAPI/NVIDIA integration points; hardware decode defaults enabled.
+- Added an Unraid CA template with a separate clean appdata path and custom `br0` networking.
+- Retained legacy-visible options and optional license field without requiring a SageTV key.
+- Included the MIM toggle but defaulted it off pending reliable live playback.

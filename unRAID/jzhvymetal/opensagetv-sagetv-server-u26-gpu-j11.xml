@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>OpenSageTV-sagetv-server-u26-gpu-j11</Name>
+  <Repository>sagetv-server-26-gpu-j11:local</Repository>
+  <Registry>https://github.com/jzhvymetal/opensagetv-container</Registry>
+  <Network>br0</Network>
+  <MyIP/>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/jzhvymetal/opensagetv-container/issues</Support>
+  <Project>https://github.com/jzhvymetal/opensagetv-core</Project>
+  <Overview>Clean Ubuntu 26.04/OpenJDK 11 SageTV server. Assign a unique br0 IP so it can run beside an existing SageTV installation. MIM is included by the release pipeline but disabled by default.</Overview>
+  <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video</Category>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <Icon>https://raw.githubusercontent.com/OpenSageTV/sagetv-dockers/master/resources/SageTVOS_icon.png</Icon>
+  <ExtraParams>--init</ExtraParams>
+  <PostArgs/>
+  <CPUset/>
+  <Date>2026-08-25</Date>
+  <DonateText/>
+  <DonateLink/>
+  <Requires>Linux amd64; unique custom br0 IP. Intel/AMD: map /dev/dri. NVIDIA: install Unraid NVIDIA driver and add its runtime/device parameters.</Requires>
+  <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/sagetv-server-26-gpu-j11" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Media Path" Target="/var/media" Default="/mnt/user/sagemedia" Mode="rw" Description="Recordings and SageTV media." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Extra Media Path" Target="/var/mediaext" Default="/mnt/user/media/videos" Mode="rw" Description="Imported media." Type="Path" Display="always" Required="false" Mask="false"/>
+  <Config Name="TV Path" Target="/var/tv" Default="/mnt/user/media/tv" Mode="rw" Description="Optional alternate recordings path." Type="Path" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Intel/AMD GPU" Target="/dev/dri" Default="/dev/dri" Mode="rw" Description="Remove if no Intel QSV or AMD VAAPI device is used." Type="Device" Display="always" Required="false" Mask="false"/>
+  <Config Name="SageTV WebUI" Target="8080" Default="8080" Mode="tcp" Description="Only active if the user installs a Web UI plugin." Type="Port" Display="always" Required="false" Mask="false"/>
+  <Config Name="SageTV Service" Target="42024" Default="42024" Mode="tcp" Description="SageTV server service." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Placeshifter" Target="7818" Default="7818" Mode="tcp" Description="Placeshifter service." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Discovery" Target="8270" Default="8270" Mode="udp" Description="SageTV discovery." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Discovery 31100" Target="31100" Default="31100" Mode="udp" Description="SageTV discovery." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Service 31099" Target="31099" Default="31099" Mode="tcp" Description="SageTV service." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Discovery 16867" Target="16867" Default="16867" Mode="udp" Description="SageTV discovery." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Discovery 16869" Target="16869" Default="16869" Mode="udp" Description="SageTV discovery." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Service 16881" Target="16881" Default="16881" Mode="tcp" Description="SageTV service." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Timezone" Target="TZ" Default="America/Chicago" Mode="" Description="IANA timezone." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="User ID" Target="PUID" Default="99" Mode="" Description="Unraid nobody UID." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Group ID" Target="PGID" Default="100" Mode="" Description="Unraid users GID." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="JVM Memory MB" Target="JAVA_MEM_MB" Default="2048" Mode="" Description="Maximum Java heap in MB." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Hardware Decode" Target="HARDWARE_DECODE" Default="true" Mode="" Description="Allow configured GPU acceleration." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="GPU Vendor" Target="GPU_VENDOR" Default="auto" Mode="" Description="auto, intel, amd, nvidia, or none." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Enable FFmpeg/MIM" Target="MIM_ENABLED" Default="false" Mode="" Description="Experimental and reversible; disabled until live playback is reliable." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="License Key (optional)" Target="LICENCE_DATA" Default="" Mode="" Description="Retained for legacy plugin compatibility; SageTV itself does not require a key." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Install Gentuner" Target="OPT_GENTUNER" Default="Y" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Install CommandIR" Target="OPT_COMMANDIR" Default="N" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Install Comskip" Target="OPT_COMSKIP" Default="Y" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Set Permissions" Target="OPT_SETPERMS" Default="Y" Mode="" Description="Set appdata ownership at startup." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Enable LIRC" Target="OPT_LIRC" Default="N" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+</Container>

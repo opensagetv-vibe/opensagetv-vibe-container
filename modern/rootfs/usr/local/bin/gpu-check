@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+set -u
+echo "GPU vendor mode: ${GPU_VENDOR:-auto}; hardware decode: ${HARDWARE_DECODE:-true}"
+if [[ -d /dev/dri ]]; then ls -l /dev/dri; else echo "No /dev/dri device supplied (Intel/AMD unavailable)."; fi
+if [[ -e /dev/nvidia0 ]]; then echo "NVIDIA device present."; else echo "No NVIDIA device supplied."; fi
