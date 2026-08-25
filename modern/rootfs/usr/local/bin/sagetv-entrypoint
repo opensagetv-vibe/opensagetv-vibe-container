@@ -14,6 +14,7 @@ getent group "$gid" >/dev/null || groupadd -g "$gid" sagetv-runtime
 usermod -o -u "$uid" sagetv 2>/dev/null || true
 usermod -g "$gid" sagetv 2>/dev/null || true
 if [[ "${OPT_SETPERMS:-Y}" =~ ^[Yy1Tt] ]]; then chown -R "$uid:$gid" /opt/sagetv; fi
+/usr/local/bin/sagetv-options
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 export JAVAMEM="-Xmx${JAVA_MEM_MB:-2048}m"
 export JAVAOPTS="${JAVAOPTS:-} -XX:ErrorFile=${home}/hs_err_pid%p.log -XX:+CreateCoredumpOnCrash"

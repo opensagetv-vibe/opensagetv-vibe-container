@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       libasound2t64 libavc1394-0 libfreetype6 libgif7 libiec61883-0 \
       libjpeg-turbo8 libnsl2 libpng16-16t64 libraw1394-11 libtiff6 \
       libva2 libva-drm2 libvpl2 libx11-6 libxext6 libxi6 libxrender1 \
-      libxtst6 mesa-va-drivers mesa-vulkan-drivers openjdk-11-jre-headless \
+      libxtst6 intel-media-va-driver-non-free mesa-va-drivers mesa-vulkan-drivers openjdk-11-jre-headless \
       procps tini tzdata && rm -rf /var/lib/apt/lists/*
 RUN useradd --system --create-home --home-dir /opt/sagetv --shell /bin/bash sagetv \
  && mkdir -p /usr/local/share/sagetv-dist /opt/sagetv/server /var/media /var/mediaext /var/tv
@@ -22,7 +22,9 @@ COPY artifacts/sagetv-server-x86_64.tar.gz /tmp/core.tar.gz
 RUN tar -xzf /tmp/core.tar.gz -C /usr/local/share/sagetv-dist && rm /tmp/core.tar.gz \
  && test -f /usr/local/share/sagetv-dist/Sage.jar
 COPY modern/rootfs/ /
-RUN chmod 0755 /usr/local/bin/sagetv-entrypoint /usr/local/bin/sagetv-supervisor /usr/local/bin/gpu-check
+COPY resources/gentuner-1.0.1.tgz resources/commandir-1.0.3.1-amd64.tgz /usr/local/share/sagetv-options/
+COPY sagetv-base/SYSTEM/sagetv_files/comskip/ /usr/local/share/sagetv-options/comskip/
+RUN chmod 0755 /usr/local/bin/sagetv-entrypoint /usr/local/bin/sagetv-supervisor /usr/local/bin/gpu-check /usr/local/bin/sagetv-options
 VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv"]
 EXPOSE 8080 42024 7818 8270/udp 31100/udp 31099 16867/udp 16869/udp 16881
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 CMD pgrep -f 'java.*sage.Sage' >/dev/null || exit 1
