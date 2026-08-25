@@ -7,7 +7,7 @@ LABEL org.opencontainers.image.title="OpenSageTV Ubuntu 26 GPU Java 11" \
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
     MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y \
-    OPT_COMMANDIR=N OPT_COMSKIP=Y OPT_SETPERMS=Y OPT_LIRC=N
+    OPT_COMMANDIR=N OPT_COMSKIP=Y OPT_SETPERMS=Y OPT_LIRC=N TINI_SUBREAPER=1
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
       bash ca-certificates coreutils findutils fontconfig gosu iproute2 \

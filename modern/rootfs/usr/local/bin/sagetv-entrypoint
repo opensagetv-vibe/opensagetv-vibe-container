@@ -13,11 +13,21 @@ if [[ -n "${TZ:-}" && -e "/usr/share/zoneinfo/${TZ}" ]]; then ln -snf "/usr/shar
 getent group "$gid" >/dev/null || groupadd -g "$gid" sagetv-runtime
 usermod -o -u "$uid" sagetv 2>/dev/null || true
 usermod -g "$gid" sagetv 2>/dev/null || true
-if [[ "${OPT_SETPERMS:-Y}" =~ ^[Yy1Tt] ]]; then chown -R "$uid:$gid" /opt/sagetv; fi
 /usr/local/bin/sagetv-options
+if [[ "${OPT_SETPERMS:-Y}" =~ ^[Yy1Tt] ]]; then
+  chown -R "$uid:$gid" /opt/sagetv
+fi
+# Fail here with a useful error instead of allowing SageTV to fail later while
+# replacing Sage.properties. This also validates Unraid bind-mount ownership.
+if ! gosu "$uid:$gid" sh -c 'probe="$1/.sagetv-write-test"; : > "$probe" && rm -f "$probe"' sh "$home"; then
+  echo "ERROR: SageTV appdata is not writable by PUID=$uid PGID=$gid: $home" >&2
+  echo "Check the Unraid path mapping and keep OPT_SETPERMS=Y for initial setup." >&2
+  exit 31
+fi
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 export JAVAMEM="-Xmx${JAVA_MEM_MB:-2048}m"
 export JAVAOPTS="${JAVAOPTS:-} -XX:ErrorFile=${home}/hs_err_pid%p.log -XX:+CreateCoredumpOnCrash"
+export PIDFILE="${PIDFILE:-/tmp/sagetv.pid}"
 export LD_LIBRARY_PATH="$home${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 echo "SageTV Ubuntu 26 Java 11; MIM_ENABLED=${MIM_ENABLED:-false}; HARDWARE_DECODE=${HARDWARE_DECODE:-true}"
 /usr/local/bin/gpu-check || true

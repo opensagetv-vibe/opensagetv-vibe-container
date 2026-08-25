@@ -12,7 +12,7 @@
   <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Icon>https://raw.githubusercontent.com/OpenSageTV/sagetv-dockers/master/resources/SageTVOS_icon.png</Icon>
-  <ExtraParams>--init</ExtraParams>
+  <ExtraParams/>
   <PostArgs/>
   <CPUset/>
   <Date>2026-08-25</Date>
