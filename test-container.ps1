@@ -8,6 +8,9 @@ try {
   Start-Sleep -Seconds 25
   docker exec $name test -f /opt/sagetv/server/Sage.jar
   docker exec $name test -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar
+  docker exec $name test -s /opt/sagetv/server/common.properties
+  docker exec $name test -s /opt/sagetv/server/xmltv_EPG123.profile
+  docker exec $name test -s /opt/sagetv/server/xmltv_Pluto.profile
   docker exec $name grep -q '^epg/epg_import_plugin=xmltv.XMLTVImportPlugin$' /opt/sagetv/server/Sage.properties
   docker exec $name pgrep -f 'java.*sage.Sage'
   if ($LASTEXITCODE) { throw 'SageTV process did not start' }

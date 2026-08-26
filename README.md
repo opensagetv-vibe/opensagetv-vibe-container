@@ -8,6 +8,10 @@ For Unraid, load the saved image on the low-power server and install `unRAID/jzh
 
 The bundled XMLTV importer is registered automatically as
 `xmltv.XMLTVImportPlugin`; SageTV's obsolete EPG license service is not used.
+Reusable `common.properties` and `xmltv_*.profile` files are seeded directly in
+the SageTV server root on first start. Existing user-modified profiles are not
+overwritten on an image upgrade. Provider examples remain under
+`.config/xmltv-examples`.
 The Unraid template maps `/mnt/user` to `/unraid` so provider files such as
 `/unraid/appdata/xmltvdata/*.xml` remain readable. A clean install creates
 `Sage.properties` before applying these container-managed defaults.

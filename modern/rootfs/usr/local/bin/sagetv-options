@@ -46,6 +46,16 @@ fi
 mkdir -p "$home/JARs" "$home/.config/xmltv-examples"
 cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
 cp -n /usr/local/share/sagetv-options/xmltv/config-examples/* "$home/.config/xmltv-examples/" 2>/dev/null || true
+# Profiles must be beside Sage.properties because the importer resolves them
+# from the server working directory. Seed only missing profiles so a user's
+# tuned profile is never overwritten during a container upgrade.
+for profile_asset in \
+  /usr/local/share/sagetv-options/xmltv/config-examples/common.properties \
+  /usr/local/share/sagetv-options/xmltv/config-examples/xmltv_*.profile; do
+  [[ -f "$profile_asset" ]] || continue
+  profile_target="$home/$(basename "$profile_asset")"
+  [[ -e "$profile_target" ]] || cp "$profile_asset" "$profile_target"
+done
 # Registering the import class makes XMLTV providers selectable and prevents
 # SageTV from falling back to its retired licensed EPG service. This does not
 # select a lineup or perform an import until the user chooses a provider.
