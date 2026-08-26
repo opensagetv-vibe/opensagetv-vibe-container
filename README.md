@@ -11,3 +11,10 @@ The bundled XMLTV importer is registered automatically as
 The Unraid template maps `/mnt/user` to `/unraid` so provider files such as
 `/unraid/appdata/xmltvdata/*.xml` remain readable. A clean install creates
 `Sage.properties` before applying these container-managed defaults.
+
+For HTTPS feeds or channel-logo sites intercepted by a private TLS gateway,
+place the administrator-provided root CA (`.crt`, `.cer`, or `.pem`) under
+`/mnt/user/appdata/sagetv-server-26-gpu-j11/certs`. At each startup the
+container validates those files and imports them into Java's trust store.
+Certificate checking remains enabled; the image never uses a trust-all TLS
+handler.

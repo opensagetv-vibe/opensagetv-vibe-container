@@ -2,6 +2,8 @@
 
 ## Next
 
+* Added persistent, administrator-controlled Java CA certificate import from `/opt/sagetv/certs` for XMLTV/logo HTTPS endpoints behind private TLS gateways; TLS verification remains enabled.
+* Embedded XMLTV channel-logo downloading now honors both historical and current enable keys and produces bounded, normalized PNG files.
 * Initialize an empty `Sage.properties` on a clean appdata volume before applying container-managed discovery and XMLTV provider defaults. SageTV can then populate its normal defaults without requiring historical appdata.
 * Register the installed XMLTV importer in `epg/epg_import_plugin` on every startup so SageTV does not route XMLTV setup through the retired license-key flow.
 * Added container regressions for clean startup, XMLTV JAR/property installation, Core discovery with a missing property, and Core fallback from an invalid legacy importer class.

@@ -27,6 +27,27 @@ if ! cmp -s /usr/local/share/sagetv-dist/startsagecore "$home/startsagecore"; th
 fi
 test -x "$home/startsagecore" || chmod 0755 "$home/startsagecore"
 if [[ -n "${TZ:-}" && -e "/usr/share/zoneinfo/${TZ}" ]]; then ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime; fi
+
+# Java uses its own CA store. Import only administrator-supplied certificates
+# from persistent appdata so HTTPS XMLTV/logo sources behind a private proxy or
+# enterprise TLS gateway can be used without disabling certificate checks.
+ca_dir="${SAGETV_CA_CERTS_DIR:-/opt/sagetv/certs}"
+if [[ -d "$ca_dir" ]]; then
+  shopt -s nullglob
+  for cert in "$ca_dir"/*.crt "$ca_dir"/*.cer "$ca_dir"/*.pem; do
+    if ! keytool -printcert -file "$cert" >/dev/null 2>&1; then
+      echo "WARNING: ignoring invalid CA certificate: $cert" >&2
+      continue
+    fi
+    cert_alias="sagetv-$(sha256sum "$cert" | cut -d' ' -f1)"
+    if ! keytool -list -cacerts -storepass changeit -alias "$cert_alias" >/dev/null 2>&1; then
+      keytool -importcert -noprompt -trustcacerts -cacerts -storepass changeit \
+        -alias "$cert_alias" -file "$cert" >/dev/null
+      echo "Imported Java CA certificate: $(basename "$cert")"
+    fi
+  done
+  shopt -u nullglob
+fi
 getent group "$gid" >/dev/null || groupadd -g "$gid" sagetv-runtime
 usermod -o -u "$uid" sagetv 2>/dev/null || true
 usermod -g "$gid" sagetv 2>/dev/null || true

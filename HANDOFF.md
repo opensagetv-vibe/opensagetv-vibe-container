@@ -13,6 +13,18 @@ required `/mnt/user:/unraid` mapping for XMLTV source paths. On an empty appdata
 directory the entrypoint creates an empty `Sage.properties`, then SageTV fills
 in its normal defaults on first launch. No old server settings are copied.
 
+Optional private CA roots belong in persistent `/opt/sagetv/certs` (`.crt`,
+`.cer`, or `.pem`). The root entrypoint validates and imports them into Java's
+CA store before dropping privileges. This is required when an XMLTV or logo
+HTTPS endpoint is intercepted by an enterprise proxy whose CA is not part of
+Ubuntu; do not replace it with a trust-all TLS implementation.
+
+The 2026-08-26 Unraid commissioning imported the administrator-controlled
+Zscaler roots from persistent appdata, loaded XMLTV plugin version 3.2, and
+completed the real 107-channel guide import. All 107 logos were valid PNGs at
+or below 256x256, the plugin logged zero download failures, and the SageTV
+container at `192.168.10.232` remained healthy.
+
 Runtime validation on 2026-08-25 used the production image on Unraid at
 `192.168.10.232`: Docker health was healthy, the Sage JVM remained running, the
 plugin property and JAR were present, and the configured
