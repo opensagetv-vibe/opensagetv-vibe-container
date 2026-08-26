@@ -2,6 +2,7 @@
 
 ## Next
 
+* Fixed the PowerShell clean-install regression harness to remove its anonymous runtime volumes along with the temporary container, preventing five leaked Docker volumes per test run.
 * Added persistent, administrator-controlled Java CA certificate import from `/opt/sagetv/certs` for XMLTV/logo HTTPS endpoints behind private TLS gateways; TLS verification remains enabled.
 * Embedded XMLTV channel-logo downloading now honors both historical and current enable keys and produces bounded, normalized PNG files.
 * Initialize an empty `Sage.properties` on a clean appdata volume before applying container-managed discovery and XMLTV provider defaults. SageTV can then populate its normal defaults without requiring historical appdata.

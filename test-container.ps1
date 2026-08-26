@@ -15,7 +15,9 @@ try {
   if ($health -ne 'healthy') { throw "Container health is $health" }
   docker stop --time 20 $name | Out-Null
 } finally {
-  docker rm -f $name 2>$null | Out-Null
+  # The runtime image declares several data volumes. Remove anonymous test
+  # volumes with the container instead of leaking five volumes per run.
+  docker rm -f -v $name 2>$null | Out-Null
   $resolvedData = [IO.Path]::GetFullPath($data)
   $resolvedTemp = [IO.Path]::GetFullPath($env:TEMP).TrimEnd([IO.Path]::DirectorySeparatorChar) + [IO.Path]::DirectorySeparatorChar
   if ($resolvedData.StartsWith($resolvedTemp) -and (Split-Path -Leaf $resolvedData).StartsWith('sagetv-u26-clean-test-')) {
