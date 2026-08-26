@@ -8,6 +8,13 @@ if [[ ! -f "$home/Sage.jar" ]]; then
   cp -a /usr/local/share/sagetv-dist/. "$home/"
 fi
 test -f "$home/Sage.jar" || { echo "ERROR: Sage.jar missing"; exit 30; }
+# A clean Core archive does not contain Sage.properties; Sage normally creates
+# it on first launch. Container options must be recorded before that launch,
+# so create the initially empty file without importing any prior installation.
+if [[ ! -e "$home/Sage.properties" ]]; then
+  : > "$home/Sage.properties"
+  echo "Initialized clean Sage.properties"
+fi
 # Existing appdata may contain the legacy launcher that writes /var/run and
 # discards container JVM settings. Preserve a user copy once, then install the
 # release-matched launcher on every image upgrade.

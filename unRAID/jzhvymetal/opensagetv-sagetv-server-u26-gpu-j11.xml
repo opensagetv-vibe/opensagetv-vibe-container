@@ -22,6 +22,7 @@
   <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/sagetv-server-26-gpu-j11" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Media Path" Target="/var/media" Default="/mnt/user/sagemedia" Mode="rw" Description="Recordings and SageTV media." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Extra Media Path" Target="/var/mediaext" Default="/mnt/user/media/videos" Mode="rw" Description="Imported media." Type="Path" Display="always" Required="false" Mask="false"/>
+  <Config Name="Unraid Share Path" Target="/unraid" Default="/mnt/user" Mode="rw" Description="Unraid shares, including appdata/xmltvdata paths used by XMLTV provider configurations." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="TV Path" Target="/var/tv" Default="/mnt/user/media/tv" Mode="rw" Description="Optional alternate recordings path." Type="Path" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Intel/AMD GPU" Target="/dev/dri" Default="/dev/dri" Mode="rw" Description="Remove if no Intel QSV or AMD VAAPI device is used." Type="Device" Display="always" Required="false" Mask="false"/>
   <Config Name="SageTV WebUI" Target="8080" Default="8080" Mode="tcp" Description="Only active if the user installs a Web UI plugin." Type="Port" Display="always" Required="false" Mask="false"/>
@@ -40,6 +41,7 @@
   <Config Name="Hardware Decode" Target="HARDWARE_DECODE" Default="true" Mode="" Description="Allow configured GPU acceleration." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="GPU Vendor" Target="GPU_VENDOR" Default="auto" Mode="" Description="auto, intel, amd, nvidia, or none." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Enable FFmpeg/MIM" Target="MIM_ENABLED" Default="false" Mode="" Description="Experimental and reversible; disabled until live playback is reliable." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="XMLTV EPG Provider" Target="XMLTV_IMPORT_PLUGIN" Default="xmltv.XMLTVImportPlugin" Mode="" Description="Registers the bundled XMLTV provider without requiring a legacy SageTV license. Keep this value unless using a different EPG import plugin." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="License Key (optional)" Target="LICENCE_DATA" Default="" Mode="" Description="Retained for legacy plugin compatibility; SageTV itself does not require a key." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="Install Gentuner" Target="OPT_GENTUNER" Default="Y" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Install CommandIR" Target="OPT_COMMANDIR" Default="N" Mode="" Description="Legacy-compatible option." Type="Variable" Display="advanced" Required="false" Mask="false"/>

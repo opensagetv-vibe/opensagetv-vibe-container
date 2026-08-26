@@ -1,0 +1,15 @@
+diff --git a/src/main/java/opendct/sagetv/SageTVRequestHandler.java b/src/main/java/opendct/sagetv/SageTVRequestHandler.java
+index 58f9356..56dd8ef 100644
+--- a/src/main/java/opendct/sagetv/SageTVRequestHandler.java
++++ b/src/main/java/opendct/sagetv/SageTVRequestHandler.java
+@@ -626,7 +626,9 @@ public class SageTVRequestHandler implements Runnable {
+                         StringTokenizer tokens = new StringTokenizer(lastRequest.substring("AUTOINFOSCAN ".length()), "|");
+ 
+                         String vCaptureDevice = tokens.nextToken();
+-                        if (tokens.countTokens() == 2) {
++                        // The encoder token was consumed above; a valid V3
++                        // encoder|channel request now has one token remaining.
++                        if (tokens.countTokens() == 1) {
+                             // V3 encoder
+                             SageTVDeviceCrossbar deviceType = SageTVDeviceCrossbar.getTypeForName(vCaptureDevice, crossbarIndex);
+                             vCaptureDevice = SageTVDeviceCrossbar.trimToName(vCaptureDevice, deviceType, crossbarIndex[0]);

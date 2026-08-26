@@ -6,7 +6,8 @@ LABEL org.opencontainers.image.title="OpenSageTV Ubuntu 26 GPU Java 11" \
       org.opencontainers.image.source="https://github.com/jzhvymetal/opensagetv-container"
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
-    MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y \
+    MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y MINI_DISCOVERY_BIND_ADDRESS=auto \
+    XMLTV_IMPORT_PLUGIN=xmltv.XMLTVImportPlugin \
     OPT_COMMANDIR=N OPT_COMSKIP=Y OPT_SETPERMS=Y OPT_LIRC=N TINI_SUBREAPER=1
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,7 +28,7 @@ COPY modern/rootfs/ /
 COPY resources/gentuner-1.0.1.tgz resources/commandir-1.0.3.1-amd64.tgz /usr/local/share/sagetv-options/
 COPY sagetv-base/SYSTEM/sagetv_files/comskip/ /usr/local/share/sagetv-options/comskip/
 RUN chmod 0755 /usr/local/bin/sagetv-entrypoint /usr/local/bin/sagetv-supervisor /usr/local/bin/gpu-check /usr/local/bin/sagetv-options
-VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv"]
+VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv", "/unraid"]
 EXPOSE 8080 42024 7818 8270/udp 31100/udp 31099 16867/udp 16869/udp 16881
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 CMD pgrep -f 'java.*sage.Sage' >/dev/null || exit 1
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/sagetv-entrypoint"]

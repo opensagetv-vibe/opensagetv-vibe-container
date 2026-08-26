@@ -1,7 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 home="${SAGETV_HOME:-/opt/sagetv/server}"
+properties="$home/Sage.properties"
 enabled() { [[ "${1:-N}" =~ ^[Yy1Tt] ]]; }
+
+# Record the current container address on every start. This value is diagnostic;
+# SageTV replies through the socket that received the discovery request so host,
+# macvlan and ipvlan networking all use the kernel-selected source address.
+discovery_address="${MINI_DISCOVERY_BIND_ADDRESS:-auto}"
+if [[ "$discovery_address" == auto ]]; then
+  discovery_address="$(ip -4 -o addr show dev eth0 scope global 2>/dev/null | awk 'NR == 1 { sub(/\/.*/, "", $4); print $4 }')"
+  if [[ -z "$discovery_address" ]]; then
+    discovery_address="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{ for (i=1; i<=NF; i++) if ($i == "src") { print $(i+1); exit } }')"
+  fi
+fi
+if [[ -n "$discovery_address" ]]; then
+  if ! ip -4 addr show | grep -Fq "inet $discovery_address/"; then
+    echo "ERROR: MINI_DISCOVERY_BIND_ADDRESS=$discovery_address is not assigned to this container" >&2
+    exit 1
+  fi
+  properties_tmp="$properties.discovery.tmp"
+  awk -v value="$discovery_address" '
+    BEGIN { found=0 }
+    /^mini_discovery_bind_address=/ { print "mini_discovery_bind_address=" value; found=1; next }
+    { print }
+    END { if (!found) print "mini_discovery_bind_address=" value }
+  ' "$properties" > "$properties_tmp"
+  mv "$properties_tmp" "$properties"
+  echo "MiniClient discovery bound to $discovery_address"
+fi
 if enabled "${OPT_GENTUNER:-Y}" && [[ ! -e "$home/irtunerplugins/GenericTunerPlugin.so" ]]; then
   tar -xzf /usr/local/share/sagetv-options/gentuner-1.0.1.tgz -C "$home"
   echo "Generic Tuner Plugin installed from image asset"
@@ -19,8 +46,19 @@ fi
 mkdir -p "$home/JARs" "$home/.config/xmltv-examples"
 cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
 cp -n /usr/local/share/sagetv-options/xmltv/config-examples/* "$home/.config/xmltv-examples/" 2>/dev/null || true
-# XMLTV is installed but intentionally not selected in Sage.properties. It has
-# no license requirement; users opt in by selecting/configuring the provider.
+# Registering the import class makes XMLTV providers selectable and prevents
+# SageTV from falling back to its retired licensed EPG service. This does not
+# select a lineup or perform an import until the user chooses a provider.
+xmltv_plugin="${XMLTV_IMPORT_PLUGIN:-xmltv.XMLTVImportPlugin}"
+properties_tmp="$properties.xmltv.tmp"
+awk -v value="$xmltv_plugin" '
+  BEGIN { found=0 }
+  /^epg\/epg_import_plugin=/ { print "epg/epg_import_plugin=" value; found=1; next }
+  { print }
+  END { if (!found) print "epg/epg_import_plugin=" value }
+' "$properties" > "$properties_tmp"
+mv "$properties_tmp" "$properties"
+echo "XMLTV EPG provider registered: $xmltv_plugin (no license required)"
 if enabled "${MIM_ENABLED:-false}"; then
   [[ -e "$home/ffmpeg.stock" ]] || mv "$home/ffmpeg" "$home/ffmpeg.stock"
   cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real "$home/ffmpeg.real"
