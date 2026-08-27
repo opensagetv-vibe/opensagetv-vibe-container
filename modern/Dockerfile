@@ -1,9 +1,9 @@
 ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS production
 ARG CORE_VERSION=9.2.10-u26-dev
-LABEL org.opencontainers.image.title="OpenSageTV Ubuntu 26 GPU Java 11" \
+LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
       org.opencontainers.image.version="${CORE_VERSION}" \
-      org.opencontainers.image.source="https://github.com/jzhvymetal/opensagetv-container"
+      org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container"
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
     MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y MINI_DISCOVERY_BIND_ADDRESS=auto \

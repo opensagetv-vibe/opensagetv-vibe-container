@@ -8,7 +8,7 @@ data.
 
 Apply `autoinfoscan-v3-token-count.patch` to OpenDCT 0.5.32. SageTV Core must
 also send `NetworkCaptureDevice.getLocalName()` as the V3 encoder name; that
-change is in `opensagetv-core/java/sage/NetworkCaptureDevice.java`.
+change is in `opensagetv-vibe-core/java/sage/NetworkCaptureDevice.java`.
 
 The installed Unraid JAR is backed up as
 `opendct-0.5.32.jar.pre-autoinfoscan-fix`. The fixed JAR SHA-256 used for the

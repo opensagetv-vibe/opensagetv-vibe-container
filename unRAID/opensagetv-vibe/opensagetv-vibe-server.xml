@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>OpenSageTV-sagetv-server-u26-gpu-j11</Name>
-  <Repository>sagetv-server-26-gpu-j11:local</Repository>
-  <Registry>https://github.com/jzhvymetal/opensagetv-container</Registry>
+  <Name>opensagetv-vibe-server</Name>
+  <Repository>ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11</Repository>
+  <Registry>https://github.com/opensagetv-vibe/opensagetv-vibe-container</Registry>
   <Network>br0</Network>
   <MyIP/>
   <Privileged>false</Privileged>
-  <Support>https://github.com/jzhvymetal/opensagetv-container/issues</Support>
-  <Project>https://github.com/jzhvymetal/opensagetv-core</Project>
+  <Support>https://github.com/opensagetv-vibe/opensagetv-vibe-container/issues</Support>
+  <Project>https://github.com/opensagetv-vibe/opensagetv-vibe-core</Project>
   <Overview>Clean Ubuntu 26.04/OpenJDK 11 SageTV server. Assign a unique br0 IP so it can run beside an existing SageTV installation. MIM is included by the release pipeline but disabled by default.</Overview>
   <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
@@ -19,7 +19,7 @@
   <DonateText/>
   <DonateLink/>
   <Requires>Linux amd64; unique custom br0 IP. Intel/AMD: map /dev/dri. NVIDIA: install Unraid NVIDIA driver and add its runtime/device parameters.</Requires>
-  <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/sagetv-server-26-gpu-j11" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/opensagetv-vibe-server" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Media Path" Target="/var/media" Default="/mnt/user/sagemedia" Mode="rw" Description="Recordings and SageTV media." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Extra Media Path" Target="/var/mediaext" Default="/mnt/user/media/videos" Mode="rw" Description="Imported media." Type="Path" Display="always" Required="false" Mask="false"/>
   <Config Name="Unraid Share Path" Target="/unraid" Default="/mnt/user" Mode="rw" Description="Unraid shares, including appdata/xmltvdata paths used by XMLTV provider configurations." Type="Path" Display="always" Required="true" Mask="false"/>

@@ -2,6 +2,9 @@
 
 ## Next
 
+* Renamed the project, runtime images, Unraid CA template, clean appdata
+  default, test container, and sibling repository paths to the full
+  `opensagetv-vibe-*` namespace.
 * Added Ubuntu 26 `libmfx-gen1.2` to production and debug images so Intel QSV can create a real oneVPL/media-driver session instead of merely detecting the encoder name.
 * Added a clean-container assertion for the Intel QSV runtime implementation.
 * Staged and verified MIM 0.4.5 from the unified build output; the embedded binary SHA-256 exactly matches the tested Linux artifact and remains disabled by default.
@@ -18,4 +21,6 @@
 * MiniClient discovery now records the current container IPv4 address on every startup when `MINI_DISCOVERY_BIND_ADDRESS=auto`.
 * Startup rejects an explicitly configured discovery address that is not assigned to the container, preventing silent failure after switching between host and br0 networking.
 * Verified SageTV UDP discovery from an independent Unraid br0 peer: the server at `192.168.10.232:31100` returned the expected 15-byte `STV` response.
-* The Unraid deployment remains a separate clean instance using `/mnt/user/appdata/sagetv-server-26-gpu-j11`; no existing SageTV settings are included.
+* The Unraid deployment remains a separate clean instance using
+  `/mnt/user/appdata/opensagetv-vibe-server`; no existing SageTV settings are
+  included.
