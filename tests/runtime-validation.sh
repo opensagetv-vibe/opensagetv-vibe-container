@@ -124,6 +124,8 @@ docker cp "$root/tests/core-xmltv-autodiscovery.sh" "$name:/tmp/core-xmltv-autod
 docker exec "$name" bash /tmp/core-xmltv-autodiscovery.sh
 python3 "$root/tests/opendct-integration-test.py" "$core_source" "$root"
 
+bash "$root/tests/runtime-restart-soak.sh" "$name"
+
 docker stop --time 20 "$name" >/dev/null
 test "$(docker inspect "$name" --format '{{.State.ExitCode}}')" = 0
 cleanup

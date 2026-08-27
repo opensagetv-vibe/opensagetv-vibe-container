@@ -2,6 +2,11 @@
 
 ## Next
 
+* Added a configurable runtime restart soak using the existing temporary test
+  container: one intentional Sage JVM exit exercises the in-container
+  supervisor, followed by three complete Docker restart cycles. Each cycle
+  validates TCP readiness, health, Tini PID 1, the Java PID file, zero zombies,
+  supervisor progress, and bounded descriptor/thread/RSS growth.
 * Moved source-revision build arguments and OCI labels below the expensive
   Ubuntu runtime package and artifact layers. A commit/label-only rebuild no
   longer forces `apt` and GPU runtime packages to be downloaded again.

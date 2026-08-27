@@ -4,14 +4,22 @@ The container repository is now integrated into the one reusable
 `opensagetv-vibe-dev` workflow. `stage-artifacts.sh` validates and stages the
 exact Core, Linux MIM, and XMLTV outputs; `build.sh` labels production/debug
 images with all component commits; `tests/runtime-validation.sh` creates a
-clean appdata volume, verifies SageTV health, UDP discovery, TCP service, XMLTV
-selection, OpenDCT protocol behavior, and then proves its temporary container,
-network, anonymous volumes, and named volume were removed.
+clean appdata volume, verifies SageTV health, one supervisor-controlled JVM
+recovery, three full restart cycles, zero zombies, bounded lifecycle metrics,
+UDP discovery, TCP service, XMLTV selection, OpenDCT protocol behavior, and
+then proves its temporary container, network, anonymous volumes, and named
+volume were removed.
 
 On 2026-08-27 those tests passed from Windows Docker Desktop through the
 unified Ubuntu 26/Java 11 development container. A physical OpenDCT scan remains
 an explicit target-network gate and was recorded as `SKIPPED`, not passed, when
 no commissioned endpoint was supplied.
+
+The restart soak records JVM PID, open file descriptors, threads, RSS, zombie
+count, and cumulative supervisor starts after each recovery. Its default is
+three Docker restart cycles plus one intentional child exit. The host wrappers
+forward `OPENSAGETV_VIBE_RESTART_CYCLES` and the advanced timeout/growth-limit
+variables defined in `tests/runtime-restart-soak.sh`.
 
 XMLTV 3.5 profile assets are packaged with the plugin. On first start,
 `common.properties` and every `xmltv_*.profile` file are copied to the SageTV

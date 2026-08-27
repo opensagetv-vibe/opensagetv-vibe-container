@@ -9,14 +9,23 @@ from one Dockerfile.
 The canonical interface is the sibling build-environment wrapper:
 `opensagetv-vibe-dev.ps1 all` on Windows or `opensagetv-vibe-dev.sh all` on
 Linux. It stages the locally tested Core, Linux MIM, and XMLTV outputs, builds
-both targets, starts a clean server, performs discovery/plugin/OpenDCT tests,
-and creates offline image exports. `build.sh` and `build.ps1` remain component
+both targets, starts a clean server, performs lifecycle-soak, discovery,
+plugin, and OpenDCT tests, and creates offline image exports. `build.sh` and
+`build.ps1` remain component
 developer conveniences; a release must use the unified pipeline.
 
 The artifact staging script rejects missing files, an invalid Core gzip, an
 invalid XMLTV JAR, a failed MIM checksum set, or any source/destination hash
 mismatch. Runtime images receive OCI and component revision labels for the exact
 source commits used by the build.
+
+Runtime validation reuses its one temporary SageTV container for an unexpected
+JVM-exit recovery and three complete container restart cycles. Every cycle
+requires TCP readiness, healthy Docker state, Tini as PID 1, zero zombies, a
+live PID file, and bounded file-descriptor, thread, and RSS growth. Set
+`OPENSAGETV_VIBE_RESTART_CYCLES` to a value of at least two to lengthen the
+test; the unified Windows and Linux wrappers forward it into the development
+container.
 
 For Unraid, load the saved image on the low-power server and install
 `unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml` as a CA template. Assign a
