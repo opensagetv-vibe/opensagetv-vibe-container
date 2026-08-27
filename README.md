@@ -9,9 +9,10 @@ from one Dockerfile.
 Build on Linux with `./build.sh` or Windows Docker Desktop with `./build.ps1`. Run `./test-container.ps1` on Windows after building. The scripts consume the locally verified Core archive rather than downloading an unpinned release.
 
 For Unraid, load the saved image on the low-power server and install
-`unRAID/opensagetv-vibe/opensagetv-vibe-server.xml` as a CA template. Assign a
+`unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml` as a CA template. Assign a
 unique custom `br0` IP so this clean instance can coexist with the current
-server. Its appdata default is `/mnt/user/appdata/opensagetv-vibe-server`; no
+server. Its container name is `sagetv-vibe-server-u26-gpu-j11` and its appdata
+default is `/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`; no
 configuration is migrated.
 
 The bundled XMLTV importer is registered automatically as
@@ -26,7 +27,7 @@ The Unraid template maps `/mnt/user` to `/unraid` so provider files such as
 
 For HTTPS feeds or channel-logo sites intercepted by a private TLS gateway,
 place the administrator-provided root CA (`.crt`, `.cer`, or `.pem`) under
-`/mnt/user/appdata/opensagetv-vibe-server/certs`. At each startup the
+`/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11/certs`. At each startup the
 container validates those files and imports them into Java's trust store.
 Certificate checking remains enabled; the image never uses a trust-all TLS
 handler.

@@ -2,6 +2,8 @@
 
 ## Next
 
+* Standardized the Unraid container identity as `sagetv-vibe-server-u26-gpu-j11` and its clean appdata path as `/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`.
+* Renamed the commissioned Unraid instance in place without rebuilding it, verified health at `192.168.10.232`, and removed only its stopped backup containers and obsolete project image revisions. The production `sagetvopen-sagetv-server-java11` instance was not changed.
 * Renamed the project, runtime images, Unraid CA template, clean appdata
   default, test container, and sibling repository paths to the full
   `opensagetv-vibe-*` namespace.
@@ -22,5 +24,5 @@
 * Startup rejects an explicitly configured discovery address that is not assigned to the container, preventing silent failure after switching between host and br0 networking.
 * Verified SageTV UDP discovery from an independent Unraid br0 peer: the server at `192.168.10.232:31100` returned the expected 15-byte `STV` response.
 * The Unraid deployment remains a separate clean instance using
-  `/mnt/user/appdata/opensagetv-vibe-server`; no existing SageTV settings are
+  `/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`; no existing SageTV settings are
   included.

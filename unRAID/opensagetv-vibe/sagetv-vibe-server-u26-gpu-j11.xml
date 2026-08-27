@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Container version="2">
-  <Name>opensagetv-vibe-server</Name>
+  <Name>sagetv-vibe-server-u26-gpu-j11</Name>
   <Repository>ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11</Repository>
   <Registry>https://github.com/opensagetv-vibe/opensagetv-vibe-container</Registry>
   <Network>br0</Network>
@@ -19,7 +19,7 @@
   <DonateText/>
   <DonateLink/>
   <Requires>Linux amd64; unique custom br0 IP. Intel/AMD: map /dev/dri. NVIDIA: install Unraid NVIDIA driver and add its runtime/device parameters.</Requires>
-  <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/opensagetv-vibe-server" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="SageTV Appdata Path" Target="/opt/sagetv" Default="/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11" Mode="rw" Description="Clean appdata. Do not point this at the existing SageTV instance." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Media Path" Target="/var/media" Default="/mnt/user/sagemedia" Mode="rw" Description="Recordings and SageTV media." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Extra Media Path" Target="/var/mediaext" Default="/mnt/user/media/videos" Mode="rw" Description="Imported media." Type="Path" Display="always" Required="false" Mask="false"/>
   <Config Name="Unraid Share Path" Target="/unraid" Default="/mnt/user" Mode="rw" Description="Unraid shares, including appdata/xmltvdata paths used by XMLTV provider configurations." Type="Path" Display="always" Required="true" Mask="false"/>

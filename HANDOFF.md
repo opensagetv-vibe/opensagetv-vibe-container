@@ -9,9 +9,10 @@ under `.config/xmltv-examples`.
 The modern image is built only from the pinned Core archive placed in `artifacts/`; it never downloads `latest` at startup. Both production and debug targets use the same Ubuntu 26.04/OpenJDK 11 Dockerfile. The debug target adds diagnostic tools while preserving identical application bits and supervision.
 
 The Unraid CA template is
-`unRAID/opensagetv-vibe/opensagetv-vibe-server.xml`. Commission it with a
+`unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml`. Commission it as
+`sagetv-vibe-server-u26-gpu-j11` with a
 user-selected unused `br0` address and the clean appdata path
-`/mnt/user/appdata/opensagetv-vibe-server`. Never point it at the current
+`/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`. Never point it at the current
 production appdata.
 
 MIM 0.4.5 is deliberately false by default. Hardware decode defaults true,
@@ -50,9 +51,8 @@ Runtime validation on 2026-08-25 used the production image on Unraid at
 `192.168.10.232`: Docker health was healthy, the Sage JVM remained running, the
 plugin property and JAR were present, and the configured
 `/unraid/appdata/xmltvdata/xmltv_60177.xml` source was readable. The immediately
-previous launcher-only build is retained stopped with the suffix
-`pre-core-xmltv-backup`; an earlier rollback is retained as
-`pre-xmltv-backup`.
+previous test containers and their obsolete image revisions were removed after
+the active instance was renamed and verified healthy on 2026-08-26.
 
 MiniClient discovery uses UDP 31100 and replies through the same wildcard socket that receives the request. Keep `MINI_DISCOVERY_BIND_ADDRESS=auto`; the launcher refreshes the diagnostic property with the container's current IPv4 address on every start and rejects stale explicit addresses. On 2026-08-25 this was tested from a second Unraid br0 container and returned a valid response from `192.168.10.232:31100`.
 
