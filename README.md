@@ -22,3 +22,10 @@ place the administrator-provided root CA (`.crt`, `.cer`, or `.pem`) under
 container validates those files and imports them into Java's trust store.
 Certificate checking remains enabled; the image never uses a trust-all TLS
 handler.
+
+The image includes Ubuntu 26's `libvpl2`, `libmfx-gen1.2`, Intel media driver,
+and Mesa VAAPI/Vulkan runtime packages. `libmfx-gen1.2` supplies the Intel GPU
+implementation required for the bundled FFmpeg QSV session; `libvpl2` alone is
+only the dispatcher. FFmpeg/MIM 0.4.5 is included as a reversible option but
+remains disabled by default (`MIM_ENABLED=false`) pending Android MiniClient and
+physical AMD/NVIDIA commissioning.

@@ -2,6 +2,9 @@
 
 ## Next
 
+* Added Ubuntu 26 `libmfx-gen1.2` to production and debug images so Intel QSV can create a real oneVPL/media-driver session instead of merely detecting the encoder name.
+* Added a clean-container assertion for the Intel QSV runtime implementation.
+* Staged and verified MIM 0.4.5 from the unified build output; the embedded binary SHA-256 exactly matches the tested Linux artifact and remains disabled by default.
 * Seed XMLTV `common.properties` and reusable `xmltv_*.profile` files in the SageTV server root without overwriting user-customized copies.
 * Validate presence of common, EPG123, and Pluto profiles in the clean-container regression test.
 * Fixed the PowerShell clean-install regression harness to remove its anonymous runtime volumes along with the temporary container, preventing five leaked Docker volumes per test run.

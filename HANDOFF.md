@@ -10,7 +10,18 @@ The modern image is built only from the pinned Core archive placed in `artifacts
 
 The Unraid CA template is `unRAID/jzhvymetal/opensagetv-sagetv-server-u26-gpu-j11.xml`. Commission it with a user-selected unused `br0` address and the clean appdata path `/mnt/user/appdata/sagetv-server-26-gpu-j11`. Never point it at the current production appdata.
 
-MIM is deliberately false by default. Hardware decode defaults true, but actual acceleration requires the matching host device/runtime. The optional license field is retained for plugin compatibility and is not required by SageTV.
+MIM 0.4.5 is deliberately false by default. Hardware decode defaults true,
+but actual acceleration requires the matching host device/runtime. The image
+installs both `libvpl2` and `libmfx-gen1.2`; the latter is required for the
+Intel media driver to create the QSV session. Clean-image tests assert that the
+package is present. The optional license field is retained for plugin
+compatibility and is not required by SageTV.
+
+The 2026-08-26 production and debug images were rebuilt from the unified
+outputs. The embedded Linux MIM SHA-256 matched the tested artifact exactly,
+both images reported MIM 0.4.5, the debug image contained `gdb`, and the
+production clean-appdata regression passed. Do not enable MIM until Android
+MiniClient and physical AMD/NVIDIA commissioning are complete.
 
 XMLTV is installed and registered on every startup through
 `XMLTV_IMPORT_PLUGIN=xmltv.XMLTVImportPlugin`. This prevents Core from falling

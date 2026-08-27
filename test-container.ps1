@@ -11,6 +11,12 @@ try {
   docker exec $name test -s /opt/sagetv/server/common.properties
   docker exec $name test -s /opt/sagetv/server/xmltv_EPG123.profile
   docker exec $name test -s /opt/sagetv/server/xmltv_Pluto.profile
+  # Ubuntu's current Intel media driver needs the oneVPL legacy-dispatch
+  # implementation to create the QSV session used by the bundled FFmpeg.
+  $qsvStatus = docker exec $name dpkg-query -W '-f=${Status}' libmfx-gen1.2
+  if ($LASTEXITCODE -or $qsvStatus -notmatch 'install ok installed') {
+    throw 'Intel QSV runtime libmfx-gen1.2 is not installed'
+  }
   docker exec $name grep -q '^epg/epg_import_plugin=xmltv.XMLTVImportPlugin$' /opt/sagetv/server/Sage.properties
   docker exec $name pgrep -f 'java.*sage.Sage'
   if ($LASTEXITCODE) { throw 'SageTV process did not start' }
