@@ -1,9 +1,17 @@
 ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS production
 ARG CORE_VERSION=9.2.10-u26-dev
+ARG SOURCE_REVISION=unknown
+ARG CORE_REVISION=unknown
+ARG MIM_REVISION=unknown
+ARG XMLTV_REVISION=unknown
 LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
       org.opencontainers.image.version="${CORE_VERSION}" \
-      org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container"
+      org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opensagetv.vibe.core.revision="${CORE_REVISION}" \
+      org.opensagetv.vibe.ffmpeg-mim.revision="${MIM_REVISION}" \
+      org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}"
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
     MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y MINI_DISCOVERY_BIND_ADDRESS=auto \

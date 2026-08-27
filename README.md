@@ -6,7 +6,17 @@ OpenJDK 11. It supports Intel QSV, AMD VAAPI, and NVIDIA device integration,
 uses an in-container restart supervisor, and has production and debug targets
 from one Dockerfile.
 
-Build on Linux with `./build.sh` or Windows Docker Desktop with `./build.ps1`. Run `./test-container.ps1` on Windows after building. The scripts consume the locally verified Core archive rather than downloading an unpinned release.
+The canonical interface is the sibling build-environment wrapper:
+`opensagetv-vibe-dev.ps1 all` on Windows or `opensagetv-vibe-dev.sh all` on
+Linux. It stages the locally tested Core, Linux MIM, and XMLTV outputs, builds
+both targets, starts a clean server, performs discovery/plugin/OpenDCT tests,
+and creates offline image exports. `build.sh` and `build.ps1` remain component
+developer conveniences; a release must use the unified pipeline.
+
+The artifact staging script rejects missing files, an invalid Core gzip, an
+invalid XMLTV JAR, a failed MIM checksum set, or any source/destination hash
+mismatch. Runtime images receive OCI and component revision labels for the exact
+source commits used by the build.
 
 For Unraid, load the saved image on the low-power server and install
 `unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml` as a CA template. Assign a

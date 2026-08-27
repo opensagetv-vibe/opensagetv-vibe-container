@@ -2,6 +2,17 @@
 
 ## Next
 
+* Integrated runtime image construction and validation into the unified
+  build-environment `all` command.
+* Added exact-hash staging for Core, Linux FFmpeg/MIM, and XMLTV artifacts.
+* Added OCI source/component revision labels and targeted cleanup of superseded
+  project image IDs after a successful rebuild.
+* Added a clean runtime validation harness covering production/debug metadata,
+  clean appdata, Java health, independent-peer UDP discovery, TCP 42024, XMLTV
+  no-license auto-selection, OpenDCT V3 wire behavior, and labeled Docker
+  container/network/volume cleanup.
+* Added an optional real OpenDCT scan gate that reports `SKIPPED` unless a
+  commissioned host, port, and encoder are explicitly supplied.
 * Standardized the Unraid container identity as `sagetv-vibe-server-u26-gpu-j11` and its clean appdata path as `/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`.
 * Renamed the commissioned Unraid instance in place without rebuilding it, verified health at `192.168.10.232`, and removed only its stopped backup containers and obsolete project image revisions. The production `sagetvopen-sagetv-server-java11` instance was not changed.
 * Renamed the project, runtime images, Unraid CA template, clean appdata
