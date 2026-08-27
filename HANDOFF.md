@@ -10,6 +10,11 @@ UDP discovery, TCP service, XMLTV selection, OpenDCT protocol behavior, and
 then proves its temporary container, network, anonymous volumes, and named
 volume were removed.
 
+The repository's `.gitattributes` must keep both `*.sh` files and the
+extensionless scripts under `modern/rootfs/usr/local/bin` on LF line endings.
+This is part of runtime correctness: Windows Git clients otherwise preserve LF
+in the index but materialize CRLF shebangs in a fresh worktree.
+
 On 2026-08-27 those tests passed from Windows Docker Desktop through the
 unified Ubuntu 26/Java 11 development container. A physical OpenDCT scan remains
 an explicit target-network gate and was recorded as `SKIPPED`, not passed, when

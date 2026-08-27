@@ -2,6 +2,10 @@
 
 ## Next
 
+* Enforced LF checkout for extensionless modern runtime entrypoint,
+  supervisor, option, and GPU helper scripts. This prevents Windows fresh
+  clones from producing an image that exits with `env: bash\r: No such file or
+  directory`.
 * Added a configurable runtime restart soak using the existing temporary test
   container: one intentional Sage JVM exit exercises the in-container
   supervisor, followed by three complete Docker restart cycles. Each cycle
