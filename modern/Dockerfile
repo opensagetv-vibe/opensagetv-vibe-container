@@ -1,17 +1,5 @@
 ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS production
-ARG CORE_VERSION=9.2.10-u26-dev
-ARG SOURCE_REVISION=unknown
-ARG CORE_REVISION=unknown
-ARG MIM_REVISION=unknown
-ARG XMLTV_REVISION=unknown
-LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
-      org.opencontainers.image.version="${CORE_VERSION}" \
-      org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container" \
-      org.opencontainers.image.revision="${SOURCE_REVISION}" \
-      org.opensagetv.vibe.core.revision="${CORE_REVISION}" \
-      org.opensagetv.vibe.ffmpeg-mim.revision="${MIM_REVISION}" \
-      org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}"
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
     MIM_ENABLED=false HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y MINI_DISCOVERY_BIND_ADDRESS=auto \
@@ -36,6 +24,18 @@ COPY modern/rootfs/ /
 COPY resources/gentuner-1.0.1.tgz resources/commandir-1.0.3.1-amd64.tgz /usr/local/share/sagetv-options/
 COPY sagetv-base/SYSTEM/sagetv_files/comskip/ /usr/local/share/sagetv-options/comskip/
 RUN chmod 0755 /usr/local/bin/sagetv-entrypoint /usr/local/bin/sagetv-supervisor /usr/local/bin/gpu-check /usr/local/bin/sagetv-options
+ARG CORE_VERSION=9.2.10-u26-dev
+ARG SOURCE_REVISION=unknown
+ARG CORE_REVISION=unknown
+ARG MIM_REVISION=unknown
+ARG XMLTV_REVISION=unknown
+LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
+      org.opencontainers.image.version="${CORE_VERSION}" \
+      org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container" \
+      org.opencontainers.image.revision="${SOURCE_REVISION}" \
+      org.opensagetv.vibe.core.revision="${CORE_REVISION}" \
+      org.opensagetv.vibe.ffmpeg-mim.revision="${MIM_REVISION}" \
+      org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}"
 VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv", "/unraid"]
 EXPOSE 8080 42024 7818 8270/udp 31100/udp 31099 16867/udp 16869/udp 16881
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 CMD pgrep -f 'java.*sage.Sage' >/dev/null || exit 1

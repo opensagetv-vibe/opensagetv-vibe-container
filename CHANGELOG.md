@@ -2,6 +2,9 @@
 
 ## Next
 
+* Moved source-revision build arguments and OCI labels below the expensive
+  Ubuntu runtime package and artifact layers. A commit/label-only rebuild no
+  longer forces `apt` and GPU runtime packages to be downloaded again.
 * Integrated runtime image construction and validation into the unified
   build-environment `all` command.
 * Added exact-hash staging for Core, Linux FFmpeg/MIM, and XMLTV artifacts.
