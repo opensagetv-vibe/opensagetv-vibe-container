@@ -1,0 +1,29 @@
+# The runtime image is an OS/runtime environment plus explicitly staged
+# release payloads. Keep the legacy Docker archive, Git history, handoff ZIPs,
+# prior image exports, tests, and documentation out of the build context.
+*
+
+!modern/
+!modern/**
+
+!artifacts/
+artifacts/*
+!artifacts/sagetv-server-x86_64.tar.gz
+!artifacts/ffmpeg-mim/
+!artifacts/ffmpeg-mim/**
+!artifacts/xmltv/
+!artifacts/xmltv/**
+
+!resources/
+resources/*
+!resources/gentuner-1.0.1.tgz
+!resources/commandir-1.0.3.1-amd64.tgz
+
+!sagetv-base/
+sagetv-base/*
+!sagetv-base/SYSTEM/
+sagetv-base/SYSTEM/*
+!sagetv-base/SYSTEM/sagetv_files/
+sagetv-base/SYSTEM/sagetv_files/*
+!sagetv-base/SYSTEM/sagetv_files/comskip/
+!sagetv-base/SYSTEM/sagetv_files/comskip/**

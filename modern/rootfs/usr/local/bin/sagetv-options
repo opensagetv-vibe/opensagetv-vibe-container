@@ -3,6 +3,18 @@ set -euo pipefail
 home="${SAGETV_HOME:-/opt/sagetv/server}"
 properties="$home/Sage.properties"
 enabled() { [[ "${1:-N}" =~ ^[Yy1Tt] ]]; }
+image_seed_dir=/usr/local/share/sagetv-options/.seed-ids
+seed_state_dir=/opt/sagetv/.image-seeds
+mkdir -p "$seed_state_dir"
+component_changed() {
+  local component="$1"
+  [[ ! -s "$seed_state_dir/$component.sha256" ]] \
+    || ! cmp -s "$image_seed_dir/$component.sha256" "$seed_state_dir/$component.sha256"
+}
+record_component() {
+  local component="$1"
+  install -m 0644 "$image_seed_dir/$component.sha256" "$seed_state_dir/$component.sha256"
+}
 
 # Record the current container address on every start. This value is diagnostic;
 # SageTV replies through the socket that received the discovery request so host,
@@ -29,22 +41,34 @@ if [[ -n "$discovery_address" ]]; then
   mv "$properties_tmp" "$properties"
   echo "MiniClient discovery bound to $discovery_address"
 fi
-if enabled "${OPT_GENTUNER:-Y}" && [[ ! -e "$home/irtunerplugins/GenericTunerPlugin.so" ]]; then
+if enabled "${OPT_GENTUNER:-Y}" \
+    && { [[ ! -e "$home/irtunerplugins/GenericTunerPlugin.so" ]] || component_changed gentuner; }; then
   tar -xzf /usr/local/share/sagetv-options/gentuner-1.0.1.tgz -C "$home"
+  record_component gentuner
   echo "Generic Tuner Plugin installed from image asset"
 fi
-if enabled "${OPT_COMMANDIR:-N}" && [[ ! -e /opt/sagetv/commandir/bin/commandir_send ]]; then
+if enabled "${OPT_COMMANDIR:-N}" \
+    && { [[ ! -e /opt/sagetv/commandir/bin/commandir_send ]] || component_changed commandir; }; then
   tar -xzf /usr/local/share/sagetv-options/commandir-1.0.3.1-amd64.tgz -C /opt/sagetv
+  record_component commandir
   echo "CommandIR installed from image asset"
 fi
 if enabled "${OPT_COMSKIP:-Y}"; then
   mkdir -p /opt/sagetv/comskip
-  cp /usr/local/share/sagetv-options/comskip/comskip /opt/sagetv/comskip/comskip
+  if enabled "${COMSKIP_RESET_FROM_IMAGE:-false}" \
+      || [[ ! -e /opt/sagetv/comskip/comskip ]] || component_changed comskip; then
+    cp /usr/local/share/sagetv-options/comskip/comskip /opt/sagetv/comskip/comskip
+    record_component comskip
+  fi
   [[ -e /opt/sagetv/comskip/comskip.ini ]] || cp /usr/local/share/sagetv-options/comskip/comskip.ini /opt/sagetv/comskip/comskip.ini
   chmod 0755 /opt/sagetv/comskip/comskip
 fi
 mkdir -p "$home/JARs" "$home/.config/xmltv-examples"
-cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
+if enabled "${XMLTV_RESET_FROM_IMAGE:-false}" \
+    || [[ ! -e "$home/JARs/XMLTVImportPlugin.jar" ]] || component_changed xmltv; then
+  cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
+  record_component xmltv
+fi
 cp -n /usr/local/share/sagetv-options/xmltv/config-examples/* "$home/.config/xmltv-examples/" 2>/dev/null || true
 # Profiles must be beside Sage.properties because the importer resolves them
 # from the server working directory. Seed only missing profiles so a user's
@@ -69,16 +93,75 @@ awk -v value="$xmltv_plugin" '
 ' "$properties" > "$properties_tmp"
 mv "$properties_tmp" "$properties"
 echo "XMLTV EPG provider registered: $xmltv_plugin (no license required)"
+# The exact-path Watch and exact-channel MiniClient events are only for
+# debug/commissioning. Keep them disabled in clean production installs unless
+# the administrator explicitly enables the advanced container option.
+vibe_test_control=false
+if enabled "${VIBE_TEST_CONTROL:-false}"; then
+  vibe_test_control=true
+fi
+properties_tmp="$properties.vibe-test-control.tmp"
+awk -v value="$vibe_test_control" '
+  BEGIN { watch_found=0; channel_found=0 }
+  /^miniclient\/enable_vibe_watch_file_event=/ { print "miniclient/enable_vibe_watch_file_event=" value; watch_found=1; next }
+  /^miniclient\/enable_vibe_channel_set_event=/ { print "miniclient/enable_vibe_channel_set_event=" value; channel_found=1; next }
+  { print }
+  END {
+    if (!watch_found) print "miniclient/enable_vibe_watch_file_event=" value
+    if (!channel_found) print "miniclient/enable_vibe_channel_set_event=" value
+  }
+' "$properties" > "$properties_tmp"
+mv "$properties_tmp" "$properties"
+echo "Vibe MiniClient exact-path/channel test control: $vibe_test_control"
 if enabled "${MIM_ENABLED:-false}"; then
-  [[ -e "$home/ffmpeg.stock" ]] || mv "$home/ffmpeg" "$home/ffmpeg.stock"
-  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real "$home/ffmpeg.real"
-  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe "$home/ffprobe"
-  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg_MIM "$home/ffmpeg"
-  cp /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real.ini "$home/ffmpeg.real.ini"
+  mim_assets=/usr/local/share/sagetv-options/ffmpeg-mim
+  mim_reset=false
+  enabled "${MIM_RESET_FROM_IMAGE:-false}" && mim_reset=true
+  if [[ ! -e "$home/ffmpeg.stock" && -e "$home/ffmpeg" ]]; then
+    mv "$home/ffmpeg" "$home/ffmpeg.stock"
+  fi
+  # Image assets seed a clean installation, but appdata owns the installed
+  # MIM files after that. This permits an administrator to replace only the
+  # files in the SageTV app folder without a container restart undoing it.
+  # If MIM was disabled previously, ffmpeg equals ffmpeg.stock and needs to be
+  # switched back to the MIM wrapper when the option is enabled again.
+  mim_seed=false
+  if [[ "$mim_reset" == true ]] || component_changed mim \
+      || [[ ! -e "$home/ffmpeg" || ! -e "$home/ffmpeg.real" \
+            || ! -e "$home/ffprobe" || ! -e "$home/ffmpeg.real.ini" ]]; then
+    mim_seed=true
+  fi
+  if [[ "$mim_seed" == true ]]; then
+    cp "$mim_assets/ffmpeg_MIM" "$home/ffmpeg"
+    cp "$mim_assets/ffmpeg.real" "$home/ffmpeg.real"
+    cp "$mim_assets/ffprobe" "$home/ffprobe"
+    cp "$mim_assets/ffmpeg.real.ini" "$home/ffmpeg.real.ini"
+    record_component mim
+  elif [[ -e "$home/ffmpeg.stock" ]] && cmp -s "$home/ffmpeg" "$home/ffmpeg.stock"; then
+    # MIM was just re-enabled; switch the active dispatcher without replacing
+    # the already-installed same-image MIM payload.
+    cp "$mim_assets/ffmpeg_MIM" "$home/ffmpeg"
+  fi
   chmod 0755 "$home/ffmpeg" "$home/ffmpeg.real" "$home/ffprobe"
+  if [[ "$mim_reset" == true ]]; then
+    echo "FFmpeg/MIM restored from the image-pinned payload"
+  elif [[ "$mim_seed" == true ]]; then
+    echo "FFmpeg/MIM seeded for this Docker image"
+  else
+    echo "FFmpeg/MIM enabled; existing appdata MIM files preserved"
+  fi
 elif [[ -e "$home/ffmpeg.stock" ]]; then
-  cp "$home/ffmpeg.stock" "$home/ffmpeg"
-  chmod 0755 "$home/ffmpeg"
+  mim_mode_file="$seed_state_dir/mim-mode"
+  previous_mim_mode="$(cat "$mim_mode_file" 2>/dev/null || true)"
+  if [[ "$previous_mim_mode" != disabled || ! -e "$home/ffmpeg" ]]; then
+    cp "$home/ffmpeg.stock" "$home/ffmpeg"
+    chmod 0755 "$home/ffmpeg"
+  fi
+fi
+if enabled "${MIM_ENABLED:-false}"; then
+  printf '%s\n' enabled > "$seed_state_dir/mim-mode"
+else
+  printf '%s\n' disabled > "$seed_state_dir/mim-mode"
 fi
 if [[ -n "${LICENCE_DATA:-}" ]]; then
   printf '%s' "$LICENCE_DATA" > "$home/activkey"

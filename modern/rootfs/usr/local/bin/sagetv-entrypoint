@@ -2,28 +2,72 @@
 set -euo pipefail
 home="${SAGETV_HOME:-/opt/sagetv/server}"
 uid="${PUID:-99}"; gid="${PGID:-100}"
+enabled() { [[ "${1:-N}" =~ ^[Yy1Tt] ]]; }
 mkdir -p "$home" /var/media /var/mediaext /var/tv
-if [[ ! -f "$home/Sage.jar" ]]; then
-  echo "Initializing clean SageTV appdata from pinned image artifact"
-  cp -a /usr/local/share/sagetv-dist/. "$home/"
+image_seed_dir=/usr/local/share/sagetv-options/.seed-ids
+seed_state_dir=/opt/sagetv/.image-seeds
+mkdir -p "$seed_state_dir"
+component_changed() {
+  local component="$1"
+  [[ ! -s "$seed_state_dir/$component.sha256" ]] \
+    || ! cmp -s "$image_seed_dir/$component.sha256" "$seed_state_dir/$component.sha256"
+}
+record_component() {
+  local component="$1"
+  install -m 0644 "$image_seed_dir/$component.sha256" "$seed_state_dir/$component.sha256"
+}
+
+# Seed Core once, and refresh it only when the Core payload fingerprint changes
+# in a later Docker image. Same-image restarts preserve app-folder replacements.
+core_seed=false
+if [[ ! -f "$home/Sage.jar" || ! -f "$home/startsagecore" ]] || component_changed core; then
+  core_seed=true
+fi
+if [[ "$core_seed" == true ]]; then
+  if [[ ! -f "$home/Sage.jar" ]]; then
+    echo "Initializing clean SageTV appdata from pinned image artifact"
+    cp -a /usr/local/share/sagetv-dist/. "$home/"
+  else
+    if [[ -f "$home/startsagecore" && ! -f "$home/startsagecore.pre-u26-container" ]]; then
+      cp -a "$home/startsagecore" "$home/startsagecore.pre-u26-container"
+    fi
+    # Update the versioned Core unit while retaining database/config/plugin
+    # state. MIM owns the active ffmpeg path whenever it is enabled.
+  dist_excludes=(
+    --exclude='./Wiz.bin'
+    --exclude='./Wiz.bak'
+    --exclude='./SageTVPlugins.xml'
+    --exclude='./filetracker.properties'
+  )
+  # Once MIM is enabled, its installed wrapper is appdata-owned. The stock
+  # binary is retained separately as ffmpeg.stock, so the core refresh must
+  # not replace the administrator-installed wrapper before sagetv-options can
+  # preserve it.
+  if enabled "${MIM_ENABLED:-false}"; then
+    dist_excludes+=(--exclude='./ffmpeg')
+  fi
+  tar -C /usr/local/share/sagetv-dist "${dist_excludes[@]}" -cf - . \
+    | tar -C "$home" -xf -
+    echo "SageTV Core payload updated for this Docker image"
+  fi
+  record_component core
+else
+  echo "SageTV Core payload already seeded for this Docker image; appdata files preserved"
 fi
 test -f "$home/Sage.jar" || { echo "ERROR: Sage.jar missing"; exit 30; }
+# Seed/update the rollback binary only on first deployment or a Core payload
+# update. Ordinary same-image restarts never replace it.
+if [[ "$core_seed" == true || ! -e "$home/ffmpeg.stock" ]] && [[ -e /usr/local/share/sagetv-dist/ffmpeg ]]; then
+  cp /usr/local/share/sagetv-dist/ffmpeg "$home/ffmpeg.stock"
+  chmod 0755 "$home/ffmpeg.stock"
+  echo "Seeded ffmpeg.stock rollback binary"
+fi
 # A clean Core archive does not contain Sage.properties; Sage normally creates
 # it on first launch. Container options must be recorded before that launch,
 # so create the initially empty file without importing any prior installation.
 if [[ ! -e "$home/Sage.properties" ]]; then
   : > "$home/Sage.properties"
   echo "Initialized clean Sage.properties"
-fi
-# Existing appdata may contain the legacy launcher that writes /var/run and
-# discards container JVM settings. Preserve a user copy once, then install the
-# release-matched launcher on every image upgrade.
-if ! cmp -s /usr/local/share/sagetv-dist/startsagecore "$home/startsagecore"; then
-  if [[ -f "$home/startsagecore" && ! -f "$home/startsagecore.pre-u26-container" ]]; then
-    cp -a "$home/startsagecore" "$home/startsagecore.pre-u26-container"
-  fi
-  cp /usr/local/share/sagetv-dist/startsagecore "$home/startsagecore"
-  echo "SageTV launcher updated from pinned image artifact"
 fi
 test -x "$home/startsagecore" || chmod 0755 "$home/startsagecore"
 if [[ -n "${TZ:-}" && -e "/usr/share/zoneinfo/${TZ}" ]]; then ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime; fi

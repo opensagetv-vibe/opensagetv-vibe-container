@@ -26,10 +26,11 @@ done
 gzip -t "$core_package"
 unzip -tq "$xmltv_output/packages/XMLTVImportPlugin.jar" >/dev/null
 
-# This directory is generated, ignored by Git, and is the Docker build context's
-# only source of compiled component artifacts.
-rm -rf "$artifacts"
-mkdir -p "$artifacts/ffmpeg-mim" "$artifacts/xmltv/config-examples"
+# Compiled runtime payloads are generated and ignored by Git.  Keep the common
+# artifacts/downloads handoff area intact when refreshing the Docker context.
+rm -rf "$artifacts/ffmpeg-mim" "$artifacts/xmltv"
+rm -f "$artifacts/sagetv-server-x86_64.tar.gz"
+mkdir -p "$artifacts/downloads" "$artifacts/ffmpeg-mim" "$artifacts/xmltv/config-examples"
 cp "$core_package" "$artifacts/sagetv-server-x86_64.tar.gz"
 for name in \
   ffmpeg_MIM ffmpeg.real ffprobe ffmpeg.real.ini ffmpeg_init.sh \
