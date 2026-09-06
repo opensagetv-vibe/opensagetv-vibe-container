@@ -14,6 +14,48 @@ plugin, and OpenDCT tests, and creates offline image exports. `build.sh` and
 `build.ps1` remain component
 developer conveniences; a release must use the unified pipeline.
 
+## Distribution and commissioning
+
+This project does not publish container images to GHCR, Docker Hub, or another
+registry. The unified release pipeline writes checksummed production and debug
+image archives under `output/releases/<version>/images/`. Transfer the selected
+archive and its `.sha256` file to the target host, verify it, and load it:
+
+```bash
+sha256sum -c opensagetv-vibe-server-u26-gpu-j11.tar.gz.sha256
+gzip -dc opensagetv-vibe-server-u26-gpu-j11.tar.gz | docker load
+```
+
+The `ghcr.io/...` image spelling is retained only as the canonical local tag
+stored inside the archive and referenced by the Unraid XML. No workflow in this
+repository logs into a registry or executes `docker push`.
+
+The runtime image is a stable Ubuntu/Java/GPU environment. Ordinary Core,
+FFmpeg/MIM, XMLTV, or Comskip changes do **not** require rebuilding that image.
+Build and validate the component in `opensagetv-vibe-dev`, create a verified
+component update, install it into appdata, and restart only SageTV. Use
+`runtime-image-status` to see whether an OS/container input actually changed;
+`runtime-images` exits successfully without rebuilding when the production and
+debug fingerprints already match. Set `FORCE_RUNTIME_IMAGE_BUILD=true` only
+for an intentional runtime-baseline refresh.
+
+```bash
+../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-package mim
+./scripts/deploy-component-update.sh \
+  output/component-updates/opensagetv-vibe-mim-REVISION.tar.gz \
+  UNRAID_HOST SSH_PRIVATE_KEY
+```
+
+The same update path supports `core`, `mim`, `xmltv`, and `comskip`. It verifies
+hashes, stops only the selected test container, backs up replaced files,
+installs atomically under appdata, restarts the container, and runs a
+component-specific health check. `rollback-component-update.sh` restores the
+most recent backup. Never target the protected production container unless an
+administrator explicitly chooses it.
+
+For component-only takeover and updates, use the consistent root interface in
+[`WORKFLOW.md`](WORKFLOW.md). Every launcher resolves from its own directory.
+
 The artifact staging script rejects missing files, an invalid Core gzip, an
 invalid XMLTV JAR, a failed MIM checksum set, or any source/destination hash
 mismatch. Runtime images receive OCI and component revision labels for the exact
@@ -52,8 +94,22 @@ Certificate checking remains enabled; the image never uses a trust-all TLS
 handler.
 
 The image includes Ubuntu 26's `libvpl2`, `libmfx-gen1.2`, Intel media driver,
-and Mesa VAAPI/Vulkan runtime packages. `libmfx-gen1.2` supplies the Intel GPU
+Mesa VAAPI/Vulkan runtime packages, and Ubuntu's supported FFmpeg runtime.
+The SageTV `ffmpeg` executable therefore has a complete matching Ubuntu 26
+runtime instead of depending on libraries omitted from a minimal image.
+`libmfx-gen1.2` supplies the Intel GPU
 implementation required for the bundled FFmpeg QSV session; `libvpl2` alone is
 only the dispatcher. FFmpeg/MIM 0.4.5 is included as a reversible option but
 remains disabled by default (`MIM_ENABLED=false`) pending Android MiniClient and
 physical AMD/NVIDIA commissioning.
+
+## Persistent appdata payload policy
+
+On a clean deployment the image seeds Core, `ffmpeg.stock`, optional MIM,
+XMLTV, Comskip, and plugin assets into appdata. Appdata is then authoritative:
+manual or component-package replacements survive SageTV and Docker restarts.
+On an actual image update, only payloads whose image seed fingerprint changed
+are refreshed. Database, properties, plugin state, XMLTV profiles, recordings,
+and unrelated administrator files are never reset. The explicit
+`*_RESET_FROM_IMAGE=true` options remain recovery controls, not normal update
+steps.

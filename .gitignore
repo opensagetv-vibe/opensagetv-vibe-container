@@ -11,3 +11,5 @@ artifacts/*
 artifacts/downloads/*
 !artifacts/downloads/.gitkeep
 output/
+__pycache__/
+*.py[cod]

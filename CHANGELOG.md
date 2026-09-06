@@ -2,6 +2,77 @@
 
 ## Next
 
+- Defined source-and-file-only distribution: releases export checksummed Docker
+  archives for `docker load` commissioning and never publish images to a
+  registry. Historical upstream push helpers now fail closed.
+- Added repository checks, contribution/security guidance, and licensing
+  provenance for public OpenSageTV Vibe development.
+
+- Added verified Core, MIM, XMLTV, and Comskip component-update archives with
+  atomic appdata installation, automatic backup/rollback, installed-revision
+  metadata, targeted container restart, and component-specific health checks.
+  The complete package/install/rollback self-test passes for all four payloads,
+  and MIM 0.4.7 was commissioned on the isolated Unraid test server without
+  restarting the protected production SageTV or OpenDCT containers.
+- Changed runtime payload ownership so a clean deployment seeds appdata once,
+  administrator/component updates persist across restarts, and an image update
+  refreshes only payloads whose image seed fingerprint changed. Core keeps its
+  stock FFmpeg as `ffmpeg.stock`; MIM and other appdata binaries can be replaced
+  without rebuilding the Docker image.
+- Added a runtime-environment fingerprint and `runtime-image-status`. Matching
+  production/debug images are reused immediately; an explicit
+  `FORCE_RUNTIME_IMAGE_BUILD=true` is required for a deliberate identical-
+  environment refresh.
+- Switched runtime construction to Docker Buildx/BuildKit and added
+  project-scoped cleanup of obsolete Vibe layers. Validation leaves one
+  production image, one debug image, zero dangling project images, and never
+  globally prunes unrelated Docker resources.
+
+- Refreshed the staged Linux FFmpeg/MIM payload from the unified 0.4.6 output
+  after commissioning found a mixed image context: `ffmpeg` was 0.4.6 while
+  `ffmpeg_MIM` and `ffmpeg.real` were older. `stage-artifacts.sh` now passes
+  with wrapper SHA-256
+  `668c056eb05c77e2ad3303ac1b351103f7367a93a44904e7b430b971da724f80`
+  and runtime SHA-256
+  `fc36882f4c0bfd94910f15cc285c0daf29b31b11598bc3e2df9f089fb3578519`.
+- Rebuilt the production/debug images with the Core STV-caption protocol and
+  commissioned production tag `sagetv-vibe-server-u26-gpu-j11:caption-state`
+  on the isolated Unraid test instance. The running and appdata `Sage.jar`
+  hashes both equal
+  `10778d299874bbcfbc741d16fa4b464e670b598f0b08af88457aef0441daf15c`;
+  server health and STV-authoritative Media3/legacy-Exo captions passed.
+- Added Ubuntu 26's supported `ffmpeg` package to the production/debug runtime
+  so the Core `ffmpeg` launcher always has its matching modern shared-library
+  set. Runtime validation executes both the Core FFmpeg and optional MIM
+  binaries and rejects missing dependencies.
+- Extended `VIBE_TEST_CONTROL` to feature-gate both exact indexed-file event
+  230 and exact dotted-channel event 231. The default remains false.
+- Added a guarded Unraid test-container replacement helper. It preserves the
+  existing configuration and IP, retains a stopped timestamped rollback
+  container, and automatically restores it if the replacement fails health.
+- Built and commissioned the exact final export on the isolated Unraid test
+  instance at `192.168.10.232`. Image config ID is
+  `sha256:fb6ebf551d9cc3fbf1ccfd1dffc6ef52aa1270f3edfbdbe9c5be90ad755858c0`;
+  pinned and appdata `Sage.jar` both hash to
+  `0a8755fbbd66a4fd96a28fa8d462d3369d58d7769032ffc9d330ee36b365f889`.
+  Media3, legacy ExoPlayer, and a last/bounded GSY System run each produced
+  advancing live audio/video and completed exact 5.1/2.1 transitions without
+  a client or server crash. MIM remained disabled.
+- Synchronize the pinned executable distribution into existing appdata on
+  every startup while preserving `Wiz.bin`, `Wiz.bak`, `SageTVPlugins.xml`,
+  and `filetracker.properties`. Runtime validation seeds a stale `Sage.jar`
+  and fails unless the exact pinned image artifact replaces it.
+- Added advanced `VIBE_TEST_CONTROL`, default false, which maps to the Core
+  exact-path MiniClient property for commissioned hardware tests. The final
+  image was loaded on Unraid at `192.168.10.232`; pinned/appdata JAR hashes
+  matched and exact-path full-screen MPEG-2/AC-3 playback passed.
+- Made clean-appdata runtime validation wait for the actual first-run
+  `Sage.properties` contract instead of racing the JVM process healthcheck.
+  This keeps a fast Java start from producing a false missing-properties
+  failure.
+- Added the shared AI takeover, task, verified changed-files update, resumable
+  test/validate/build/install, and handoff ZIP interface.
+
 * Enforced LF checkout for extensionless modern runtime entrypoint,
   supervisor, option, and GPU helper scripts. This prevents Windows fresh
   clones from producing an image that exits with `env: bash\r: No such file or

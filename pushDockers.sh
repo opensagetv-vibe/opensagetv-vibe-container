@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+echo "ERROR: historical registry publication is disabled in OpenSageTV Vibe; export a commissioning archive with the unified build environment" >&2
+exit 2
+
 # docker push requires you to login.  If not already logged in then use the following before running this script
 #   docker login --username=myusername
 

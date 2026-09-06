@@ -1,0 +1,31 @@
+name: Repository checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate source and workflow contracts
+        run: |
+          set -euo pipefail
+          find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 bash -n
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          ET.parse(pathlib.Path('unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml'))
+          PY
+          test "$(grep -R -l '^[[:space:]]*docker push' --include='*.sh' . | wc -l)" -ge 1
+          for script in pushDockers.sh crushftp/pushDocker.sh sagetv-buildbase/pushit.sh sagetv-build/pushit.sh; do
+            grep -q 'historical registry publication is disabled' "$script"
+          done
+          ! grep -R -n -E 'gh auth token|docker login.*--password|password:[^[:space:]]+' \
+            --exclude-dir=.git --exclude-dir=artifacts --exclude-dir=output .
