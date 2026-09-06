@@ -6,5 +6,8 @@ runSeanServer*.sh
 
 
 *.lnk
-artifacts/
+artifacts/*
+!artifacts/downloads/
+artifacts/downloads/*
+!artifacts/downloads/.gitkeep
 output/
