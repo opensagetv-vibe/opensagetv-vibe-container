@@ -25,7 +25,7 @@ done < "$backup/NEW_FILES"
 cp -a "$backup/current/." "$appdata/"
 component="$(sed -n 's/^component=//p' "$backup/component.properties" 2>/dev/null || true)"
 case "$component" in
-  core|mim|xmltv|comskip)
+  core|mim|xmltv|tmdb|comskip)
     metadata="$appdata/.installed-components/$component.properties"
     if [[ -f "$backup/previous-component.properties" ]]; then
       mkdir -p "$(dirname "$metadata")"

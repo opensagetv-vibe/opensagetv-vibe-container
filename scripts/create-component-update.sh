@@ -7,9 +7,10 @@ output_dir="${2:-$root/output/component-updates}"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
 mim_source="${MIM_SOURCE:-$root/../opensagetv-vibe-ffmpeg-mim}"
 xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
+tmdb_source="${TMDB_SOURCE:-$root/../opensagetv-vibe-tmdb}"
 
-case "$component" in core|mim|xmltv|comskip) ;; *)
-  echo "Usage: $0 {core|mim|xmltv|comskip} [output-directory]" >&2
+case "$component" in core|mim|xmltv|tmdb|comskip) ;; *)
+  echo "Usage: $0 {core|mim|xmltv|tmdb|comskip} [output-directory]" >&2
   exit 2
 esac
 
@@ -40,6 +41,20 @@ case "$component" in
     unzip -tq "$source_file" >/dev/null
     cp "$source_file" "$tmp/payload/XMLTVImportPlugin.jar"
     revision="$(git -C "$xmltv_source" rev-parse HEAD)"
+    ;;
+  tmdb)
+    source_dir="$tmdb_source/output/packages"
+    for name in OpenSageTVVibeTMDB.jar sqlite-jdbc-3.53.2.1.jar gson-2.14.0.jar; do
+      test -s "$source_dir/$name"
+      unzip -tq "$source_dir/$name" >/dev/null
+      mkdir -p "$tmp/payload/JARs"
+      cp "$source_dir/$name" "$tmp/payload/JARs/$name"
+    done
+    mkdir -p "$tmp/payload/plugins/opensagetv-vibe-tmdb"
+    cp "$tmdb_source/plugin.properties" "$tmdb_source/tmdb_config.example.toml" \
+      "$tmp/payload/plugins/opensagetv-vibe-tmdb/"
+    test ! -e "$tmp/payload/plugins/opensagetv-vibe-tmdb/tmdb_config.toml"
+    revision="$(git -C "$tmdb_source" rev-parse HEAD)"
     ;;
   comskip)
     source_file="$root/sagetv-base/SYSTEM/sagetv_files/comskip/comskip"

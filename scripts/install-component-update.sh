@@ -19,7 +19,7 @@ tar -xzf "$archive" -C "$tmp"
 (cd "$tmp" && sha256sum -c SHA256SUMS)
 grep -qx 'format=opensagetv-vibe-component-update-v1' "$tmp/component.properties"
 component="$(sed -n 's/^component=//p' "$tmp/component.properties")"
-case "$component" in core|mim|xmltv|comskip) ;; *) echo "ERROR: invalid component metadata" >&2; exit 3;; esac
+case "$component" in core|mim|xmltv|tmdb|comskip) ;; *) echo "ERROR: invalid component metadata" >&2; exit 3;; esac
 
 server="$appdata/server"
 [[ -d "$server" ]] || { echo "ERROR: SageTV server appdata not found: $server" >&2; exit 4; }
@@ -116,6 +116,18 @@ case "$component" in
     ;;
   xmltv)
     install_file "$tmp/payload/XMLTVImportPlugin.jar" "$server/JARs/XMLTVImportPlugin.jar" 0644
+    ;;
+  tmdb)
+    for name in OpenSageTVVibeTMDB.jar sqlite-jdbc-3.53.2.1.jar gson-2.14.0.jar; do
+      install_file "$tmp/payload/JARs/$name" "$server/JARs/$name" 0644
+    done
+    plugin_dir="$server/plugins/opensagetv-vibe-tmdb"
+    install_file "$tmp/payload/plugins/opensagetv-vibe-tmdb/plugin.properties" \
+      "$plugin_dir/plugin.properties" 0644
+    install_file "$tmp/payload/plugins/opensagetv-vibe-tmdb/tmdb_config.example.toml" \
+      "$plugin_dir/tmdb_config.example.toml" 0644
+    # The private tmdb_config.toml is administrator-owned and is deliberately
+    # absent from the update package and install targets.
     ;;
   comskip)
     install_file "$tmp/payload/comskip" "$appdata/comskip/comskip" 0755

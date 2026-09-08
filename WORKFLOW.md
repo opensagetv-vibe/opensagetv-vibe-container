@@ -19,7 +19,7 @@ package only that payload:
 ../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-test mim
 ```
 
-Valid names are `core`, `mim`, `xmltv`, and `comskip`; `runtime-update-test
+Valid names are `core`, `mim`, `xmltv`, `tmdb`, and `comskip`; `runtime-update-test
 all` runs the package/install/rollback self-test for every component. Updates
 are written under `output/component-updates` with a SHA-256 sidecar.
 
@@ -42,6 +42,6 @@ and hash evidence and `scripts/rollback-component-update.sh` for recovery.
 Run `runtime-image-status` first. Rebuild production/debug images only when
 Ubuntu packages, Java, drivers, system libraries, the runtime Dockerfile,
 entrypoint/supervisor, or other container-environment inputs change. Core,
-MIM, XMLTV, and Comskip source edits use component updates. `build.sh` uses
+MIM, XMLTV, TMDB, and Comskip source edits use component updates. `build.sh` uses
 BuildKit cache, skips matching fingerprints, and removes only obsolete
 OpenSageTV Vibe image layers; it never performs a global Docker prune.

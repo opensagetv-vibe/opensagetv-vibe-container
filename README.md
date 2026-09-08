@@ -31,7 +31,7 @@ stored inside the archive and referenced by the Unraid XML. No workflow in this
 repository logs into a registry or executes `docker push`.
 
 The runtime image is a stable Ubuntu/Java/GPU environment. Ordinary Core,
-FFmpeg/MIM, XMLTV, or Comskip changes do **not** require rebuilding that image.
+FFmpeg/MIM, XMLTV, TMDB, or Comskip changes do **not** require rebuilding that image.
 Build and validate the component in `opensagetv-vibe-dev`, create a verified
 component update, install it into appdata, and restart only SageTV. Use
 `runtime-image-status` to see whether an OS/container input actually changed;
@@ -46,7 +46,7 @@ for an intentional runtime-baseline refresh.
   UNRAID_HOST SSH_PRIVATE_KEY
 ```
 
-The same update path supports `core`, `mim`, `xmltv`, and `comskip`. It verifies
+The same update path supports `core`, `mim`, `xmltv`, `tmdb`, and `comskip`. It verifies
 hashes, stops only the selected test container, backs up replaced files,
 installs atomically under appdata, restarts the container, and runs a
 component-specific health check. `rollback-component-update.sh` restores the

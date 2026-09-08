@@ -43,6 +43,11 @@ self-test passes, and a real MIM 0.4.7 update restarted only
 not touched. Rebuild Docker only for Ubuntu/Java/driver/system-library or
 container-infrastructure changes.
 
+TMDB now uses the same component-only path. Its targeted archive validation and
+atomic install/rollback self-test pass, including exact JAR comparison and proof
+that a pre-existing private `tmdb_config.toml` remains unchanged. The package
+contains only the credential-free example. No runtime image rebuild is needed.
+
 The repository's `.gitattributes` must keep both `*.sh` files and the
 extensionless scripts under `modern/rootfs/usr/local/bin` on LF line endings.
 This is part of runtime correctness: Windows Git clients otherwise preserve LF

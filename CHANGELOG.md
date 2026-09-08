@@ -2,6 +2,11 @@
 
 ## Next
 
+- Added TMDB as a component-only appdata update. Packages install the service,
+  pinned dependency JARs, metadata, and credential-free example atomically,
+  preserve administrator-owned `tmdb_config.toml`, and support verified
+  rollback without rebuilding Docker.
+
 - Defined source-and-file-only distribution: releases export checksummed Docker
   archives for `docker load` commissioning and never publish images to a
   registry. Historical upstream push helpers now fail closed.
