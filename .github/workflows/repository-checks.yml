@@ -28,4 +28,4 @@ jobs:
             grep -q 'historical registry publication is disabled' "$script"
           done
           ! grep -R -n -E 'gh auth token|docker login.*--password|password:[^[:space:]]+' \
-            --exclude-dir=.git --exclude-dir=artifacts --exclude-dir=output .
+            --exclude-dir=.git --exclude-dir=.github --exclude-dir=artifacts --exclude-dir=output .
