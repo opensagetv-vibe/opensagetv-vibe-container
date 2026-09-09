@@ -2,6 +2,8 @@
 
 ## Next
 
+- Updated repository CI to the current Node 24-based
+  `actions/checkout@v7` release.
 - Added TMDB as a component-only appdata update. Packages install the service,
   pinned dependency JARs, metadata, and credential-free example atomically,
   preserve administrator-owned `tmdb_config.toml`, and support verified
