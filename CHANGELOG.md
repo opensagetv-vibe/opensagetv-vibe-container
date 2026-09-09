@@ -5,6 +5,9 @@
 - Updated repository CI to the current Node 24-based
   `actions/checkout@v7` release. The credential scan excludes its own workflow
   source so the forbidden-pattern expression cannot trigger a false positive.
+  The workflow runner is pinned to Ubuntu 24.04 for reproducibility.
+  Maintained Linux workflow/component/test entry points now carry executable
+  Git metadata, with CI checks preventing regressions.
 - Added TMDB as a component-only appdata update. Packages install the service,
   pinned dependency JARs, metadata, and credential-free example atomically,
   preserve administrator-owned `tmdb_config.toml`, and support verified

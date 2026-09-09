@@ -11,12 +11,16 @@ permissions:
 
 jobs:
   source-contract:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - name: Validate source and workflow contracts
         run: |
           set -euo pipefail
+          test -x dev.sh
+          test -x update.sh
+          test -x scripts/create-component-update.sh
+          test -x tests/component-update-selftest.sh
           find . -type f -name '*.sh' -not -path './.git/*' -print0 | xargs -0 bash -n
           python3 - <<'PY'
           import pathlib
