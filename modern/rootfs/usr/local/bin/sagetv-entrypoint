@@ -32,20 +32,14 @@ if [[ "$core_seed" == true ]]; then
       cp -a "$home/startsagecore" "$home/startsagecore.pre-u26-container"
     fi
     # Update the versioned Core unit while retaining database/config/plugin
-    # state. MIM owns the active ffmpeg path whenever it is enabled.
+    # state. The separately installed FFmpeg plugin owns SageTVTranscoder and
+    # its plugin runtime; the Core archive continues to own stock ffmpeg.
   dist_excludes=(
     --exclude='./Wiz.bin'
     --exclude='./Wiz.bak'
     --exclude='./SageTVPlugins.xml'
     --exclude='./filetracker.properties'
   )
-  # Once MIM is enabled, its installed wrapper is appdata-owned. The stock
-  # binary is retained separately as ffmpeg.stock, so the core refresh must
-  # not replace the administrator-installed wrapper before sagetv-options can
-  # preserve it.
-  if enabled "${MIM_ENABLED:-false}"; then
-    dist_excludes+=(--exclude='./ffmpeg')
-  fi
   tar -C /usr/local/share/sagetv-dist "${dist_excludes[@]}" -cf - . \
     | tar -C "$home" -xf -
     echo "SageTV Core payload updated for this Docker image"
@@ -111,7 +105,7 @@ export JAVAMEM="-Xmx${JAVA_MEM_MB:-2048}m"
 export JAVAOPTS="${JAVAOPTS:-} -XX:ErrorFile=${home}/hs_err_pid%p.log -XX:+CreateCoredumpOnCrash"
 export PIDFILE="${PIDFILE:-/tmp/sagetv.pid}"
 export LD_LIBRARY_PATH="$home${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
-echo "SageTV Ubuntu 26 Java 11; MIM_ENABLED=${MIM_ENABLED:-false}; HARDWARE_DECODE=${HARDWARE_DECODE:-true}"
+echo "SageTV Ubuntu 26 Java 11; FFmpeg plugin runtime=external; HARDWARE_DECODE=${HARDWARE_DECODE:-true}"
 /usr/local/bin/gpu-check || true
 cd "$home"
 exec /usr/local/bin/sagetv-supervisor

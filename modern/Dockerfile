@@ -2,7 +2,7 @@ ARG UBUNTU_VERSION=26.04
 FROM ubuntu:${UBUNTU_VERSION} AS production
 ENV DEBIAN_FRONTEND=noninteractive JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64 \
     SAGETV_HOME=/opt/sagetv/server JAVA_MEM_MB=2048 PUID=99 PGID=100 TZ=America/Chicago \
-    MIM_ENABLED=false MIM_RESET_FROM_IMAGE=false XMLTV_RESET_FROM_IMAGE=false COMSKIP_RESET_FROM_IMAGE=false \
+    XMLTV_RESET_FROM_IMAGE=false COMSKIP_RESET_FROM_IMAGE=false \
     HARDWARE_DECODE=true GPU_VENDOR=auto OPT_GENTUNER=Y MINI_DISCOVERY_BIND_ADDRESS=auto \
     XMLTV_IMPORT_PLUGIN=xmltv.XMLTVImportPlugin SAGETV_CA_CERTS_DIR=/opt/sagetv/certs \
     VIBE_TEST_CONTROL=false OPT_COMMANDIR=N OPT_COMSKIP=Y OPT_SETPERMS=Y OPT_LIRC=N TINI_SUBREAPER=1
@@ -29,7 +29,6 @@ RUN set -e; \
 RUN useradd --system --create-home --home-dir /opt/sagetv --shell /bin/bash sagetv \
  && mkdir -p /usr/local/share/sagetv-dist /opt/sagetv/server /var/media /var/mediaext /var/tv
 COPY artifacts/sagetv-server-x86_64.tar.gz /tmp/core.tar.gz
-COPY artifacts/ffmpeg-mim/ /usr/local/share/sagetv-options/ffmpeg-mim/
 COPY artifacts/xmltv/ /usr/local/share/sagetv-options/xmltv/
 RUN tar -xzf /tmp/core.tar.gz -C /usr/local/share/sagetv-dist && rm /tmp/core.tar.gz \
  && test -f /usr/local/share/sagetv-dist/Sage.jar
@@ -43,7 +42,6 @@ RUN set -e; \
       find "$1" -type f -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum | sha256sum | cut -d' ' -f1; \
     }; \
     hash_tree /usr/local/share/sagetv-dist > "$seed_ids/core.sha256"; \
-    hash_tree /usr/local/share/sagetv-options/ffmpeg-mim > "$seed_ids/mim.sha256"; \
     hash_tree /usr/local/share/sagetv-options/xmltv > "$seed_ids/xmltv.sha256"; \
     hash_tree /usr/local/share/sagetv-options/comskip > "$seed_ids/comskip.sha256"; \
     sha256sum /usr/local/share/sagetv-options/gentuner-1.0.1.tgz | cut -d' ' -f1 > "$seed_ids/gentuner.sha256"; \
@@ -52,7 +50,6 @@ RUN set -e; \
 ARG CORE_VERSION=9.2.10-u26-dev
 ARG SOURCE_REVISION=unknown
 ARG CORE_REVISION=unknown
-ARG MIM_REVISION=unknown
 ARG XMLTV_REVISION=unknown
 ARG RUNTIME_ENVIRONMENT_FINGERPRINT=unknown
 LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
@@ -60,7 +57,6 @@ LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
       org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container" \
       org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opensagetv.vibe.core.revision="${CORE_REVISION}" \
-      org.opensagetv.vibe.ffmpeg-mim.revision="${MIM_REVISION}" \
       org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}"
 LABEL org.opensagetv.vibe.runtime-environment.fingerprint="${RUNTIME_ENVIRONMENT_FINGERPRINT}"
 VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv", "/unraid"]

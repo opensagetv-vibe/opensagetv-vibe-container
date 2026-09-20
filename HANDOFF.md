@@ -15,13 +15,21 @@ deployment. Changed-files packages live in `artifacts/downloads`.
 
 The container repository is now integrated into the one reusable
 `opensagetv-vibe-dev` workflow. `stage-artifacts.sh` validates and stages the
-exact Core, Linux MIM, and XMLTV outputs; `build.sh` labels production/debug
+exact Core and XMLTV outputs; `build.sh` labels production/debug
 images with all component commits; `tests/runtime-validation.sh` creates a
 clean appdata volume, verifies SageTV health, one supervisor-controlled JVM
 recovery, three full restart cycles, zero zombies, bounded lifecycle metrics,
 UDP discovery, TCP service, XMLTV selection, OpenDCT protocol behavior, and
 then proves its temporary container, network, anonymous volumes, and named
 volume were removed.
+
+As of 2026-09-20, the container no longer bundles or seeds Vibe FFmpeg/MIM.
+It retains stock SageTV `ffmpeg` and optional GPU/system driver libraries.
+`opensagetv-vibe-SageTVFFmpegPlugin` exclusively owns the root
+`SageTVTranscoder` bridge and `plugins/SageTVFFmpegPlugin/runtime`. A missing,
+disabled, partially removed, or hardware-incompatible plugin falls back to
+stock FFmpeg or the plugin runtime's deterministic software path. Historical
+MIM component-update notes below describe the superseded pre-plugin design.
 
 On 2026-08-30 the runtime workflow moved to Buildx/BuildKit plus an explicit
 environment fingerprint. The canonical production/debug image IDs are
@@ -33,15 +41,13 @@ both carry fingerprint
 A second `runtime-images` call correctly skipped, and project-scoped cleanup
 left zero dangling Vibe images without touching unrelated Docker resources.
 
-Core, MIM, XMLTV, and Comskip application updates are now independent of the
+Core, XMLTV, and Comskip application updates are independent of the
 runtime image. `create-component-update.sh` produces a hashed package;
 `install-component-update.sh` backs up and atomically replaces appdata files;
 `deploy-component-update.sh` targets the isolated Unraid container; status,
-health, and rollback helpers complete the lifecycle. The all-component
-self-test passes, and a real MIM 0.4.7 update restarted only
-`sagetv-vibe-server-u26-gpu-j11`. The production SageTV/OpenDCT containers were
-not touched. Rebuild Docker only for Ubuntu/Java/driver/system-library or
-container-infrastructure changes.
+health, and rollback helpers complete the lifecycle. FFmpeg/MIM uses the
+separate SageTV plugin lifecycle. Rebuild Docker only for
+Ubuntu/Java/driver/system-library or container-infrastructure changes.
 
 TMDB now uses the same component-only path. Its targeted archive validation and
 atomic install/rollback self-test pass, including exact JAR comparison and proof

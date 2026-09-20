@@ -19,7 +19,7 @@ tar -xzf "$archive" -C "$tmp"
 (cd "$tmp" && sha256sum -c SHA256SUMS)
 grep -qx 'format=opensagetv-vibe-component-update-v1' "$tmp/component.properties"
 component="$(sed -n 's/^component=//p' "$tmp/component.properties")"
-case "$component" in core|mim|xmltv|tmdb|comskip) ;; *) echo "ERROR: invalid component metadata" >&2; exit 3;; esac
+case "$component" in core|xmltv|tmdb|comskip) ;; *) echo "ERROR: invalid component metadata" >&2; exit 3;; esac
 
 server="$appdata/server"
 [[ -d "$server" ]] || { echo "ERROR: SageTV server appdata not found: $server" >&2; exit 4; }
@@ -108,12 +108,6 @@ case "$component" in
       install_file "$core_stage/ffmpeg" "$server/ffmpeg.stock" 0755
     fi
     ;;
-  mim)
-    install_file "$tmp/payload/ffmpeg_MIM" "$server/ffmpeg" 0755
-    install_file "$tmp/payload/ffmpeg.real" "$server/ffmpeg.real" 0755
-    install_file "$tmp/payload/ffprobe" "$server/ffprobe" 0755
-    install_file "$tmp/payload/ffmpeg.real.ini" "$server/ffmpeg.real.ini" 0644
-    ;;
   xmltv)
     install_file "$tmp/payload/XMLTVImportPlugin.jar" "$server/JARs/XMLTVImportPlugin.jar" 0644
     ;;
@@ -153,9 +147,6 @@ if [[ "$was_running" == true ]]; then
     sleep 1
   done
   [[ "$ready" == true ]] || { echo "ERROR: SageTV did not restart after $component update" >&2; exit 5; }
-  if [[ "$component" == mim ]]; then
-    docker exec "$container" /opt/sagetv/server/ffmpeg --mim-status >/dev/null
-  fi
 fi
 
 rollback_needed=false

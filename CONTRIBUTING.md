@@ -10,6 +10,7 @@ container. Use the sibling `opensagetv-vibe-build-env` checkout and run:
 ./dev.sh install
 ```
 
-Keep MIM disabled by default, preserve clean-install behavior and appdata, and
+Keep FFmpeg/MIM owned by the separately installed FFmpeg plugin, preserve
+stock-FFmpeg clean-install behavior and appdata, and
 never add a registry login/push step. Update `CHANGELOG.md`, `HANDOFF.md`, and
 `TASKS.md` in the same change.

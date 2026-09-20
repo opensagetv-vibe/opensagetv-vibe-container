@@ -3,7 +3,6 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
-mim_source="${MIM_SOURCE:-$root/../opensagetv-vibe-ffmpeg-mim}"
 xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
 production_image="${OPENSAGETV_VIBE_SERVER_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11}"
 debug_image="${OPENSAGETV_VIBE_SERVER_DEBUG_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11-debug}"
@@ -28,14 +27,13 @@ docker image inspect "$production_image" >/dev/null
 docker image inspect "$debug_image" >/dev/null
 test "$(docker image inspect "$production_image" --format '{{.Os}}/{{.Architecture}}')" = linux/amd64
 test "$(docker image inspect "$debug_image" --format '{{.Os}}/{{.Architecture}}')" = linux/amd64
-docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'MIM_ENABLED=false'
-docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'MIM_RESET_FROM_IMAGE=false'
+! docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -q '^MIM_'
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'XMLTV_RESET_FROM_IMAGE=false'
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'COMSKIP_RESET_FROM_IMAGE=false'
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'HARDWARE_DECODE=true'
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'VIBE_TEST_CONTROL=false'
 docker image inspect "$debug_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'SAGETV_DEBUG_IMAGE=true'
-for component in core mim xmltv comskip gentuner commandir; do
+for component in core xmltv comskip gentuner commandir; do
   docker run --rm --entrypoint test "$production_image" \
     -s "/usr/local/share/sagetv-options/.seed-ids/$component.sha256"
 done
@@ -43,14 +41,13 @@ done
 for pair in \
   "org.opencontainers.image.revision=$(git -C "$root" rev-parse HEAD)" \
   "org.opensagetv.vibe.core.revision=$(git -C "$core_source" rev-parse HEAD)" \
-  "org.opensagetv.vibe.ffmpeg-mim.revision=$(git -C "$mim_source" rev-parse HEAD)" \
   "org.opensagetv.vibe.xmltv-import.revision=$(git -C "$xmltv_source" rev-parse HEAD)"; do
   key="${pair%%=*}"; expected="${pair#*=}"
   test "$(docker image inspect "$production_image" --format "{{index .Config.Labels \"$key\"}}")" = "$expected"
 done
 
 docker run --rm --entrypoint bash "$debug_image" -lc \
-  'command -v gdb >/dev/null && command -v strace >/dev/null && test -f /usr/local/share/sagetv-dist/Sage.jar && test -s /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar'
+  'command -v gdb >/dev/null && command -v strace >/dev/null && test -f /usr/local/share/sagetv-dist/Sage.jar && test -s /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar && test ! -e /usr/local/share/sagetv-options/ffmpeg-mim'
 
 python3 - "$root/unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml" "$ca_image" <<'PY'
 import sys
@@ -65,7 +62,6 @@ configs = {(node.attrib.get("Name"), node.attrib.get("Target")) for node in root
 for required in {
     ("SageTV Appdata Path", "/opt/sagetv"),
     ("Hardware Decode", "HARDWARE_DECODE"),
-    ("Enable FFmpeg/MIM", "MIM_ENABLED"),
     ("Discovery 31100", "31100"),
 }:
     assert required in configs, required
@@ -84,7 +80,7 @@ docker run --rm --entrypoint bash \
   "$production_image" -lc \
   'mkdir -p /opt/sagetv/server && printf stale-core > /opt/sagetv/server/Sage.jar'
 docker run -d --name "$name" --network "$network" --label "$label" \
-  -e PUID=0 -e PGID=0 -e JAVA_MEM_MB=512 -e OPT_GENTUNER=N -e OPT_COMSKIP=Y -e MIM_ENABLED=true \
+  -e PUID=0 -e PGID=0 -e JAVA_MEM_MB=512 -e OPT_GENTUNER=N -e OPT_COMSKIP=Y \
   --mount "type=volume,source=$volume,target=/opt/sagetv" \
   "$production_image" >/dev/null
 
@@ -132,14 +128,10 @@ test "$initialized" = 1 || {
 docker exec "$name" test -f /opt/sagetv/server/Sage.jar
 docker exec "$name" cmp -s /opt/sagetv/server/Sage.jar /usr/local/share/sagetv-dist/Sage.jar
 docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.stock /usr/local/share/sagetv-dist/ffmpeg
+docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-dist/ffmpeg
 docker exec "$name" bash -lc \
   'test -z "$(ldd /opt/sagetv/server/ffmpeg | grep "not found" || true)" && /opt/sagetv/server/ffmpeg -hide_banner -version >/dev/null'
-docker exec "$name" /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real -hide_banner -version >/dev/null
-docker exec "$name" /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe -hide_banner -version >/dev/null
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg_MIM
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real
-docker exec "$name" cmp -s /opt/sagetv/server/ffprobe /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real.ini /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real.ini
+docker exec "$name" test ! -e /opt/sagetv/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg_MIM
 docker exec "$name" test -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar
 docker exec "$name" test -x /opt/sagetv/comskip/comskip
 docker exec "$name" test -s /opt/sagetv/server/common.properties
@@ -180,14 +172,11 @@ python3 "$root/tests/opendct-integration-test.py" "$core_source" "$root"
 # runnable, and the INI comment models a normal local configuration edit.
 docker exec "$name" bash -lc '
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/ffmpeg
-  printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/ffmpeg.real
-  printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/ffprobe
-  printf "\n; VIBE_USER_OVERRIDE\n" >> /opt/sagetv/server/ffmpeg.real.ini
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/Sage.jar
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/JARs/XMLTVImportPlugin.jar
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/comskip/comskip
   cd /opt/sagetv/server
-  sha256sum Sage.jar ffmpeg ffmpeg.real ffprobe ffmpeg.real.ini JARs/XMLTVImportPlugin.jar > .optional-user-override.sha256
+  sha256sum Sage.jar ffmpeg JARs/XMLTVImportPlugin.jar > .optional-user-override.sha256
   sha256sum /opt/sagetv/comskip/comskip >> .optional-user-override.sha256
 '
 bash "$root/tests/runtime-restart-soak.sh" "$name"
@@ -197,7 +186,6 @@ docker exec "$name" /opt/sagetv/server/ffmpeg -hide_banner -version >/dev/null
 # start must reseed only those marked components from the pinned image assets.
 docker exec "$name" bash -lc '
   printf stale > /opt/sagetv/.image-seeds/core.sha256
-  printf stale > /opt/sagetv/.image-seeds/mim.sha256
   printf stale > /opt/sagetv/.image-seeds/xmltv.sha256
   printf stale > /opt/sagetv/.image-seeds/comskip.sha256
 '
@@ -212,19 +200,12 @@ for _ in $(seq 1 120); do
 done
 test "$reseed_started" = 1
 docker exec "$name" cmp -s /opt/sagetv/server/Sage.jar /usr/local/share/sagetv-dist/Sage.jar
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg_MIM
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real
-docker exec "$name" cmp -s /opt/sagetv/server/ffprobe /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real.ini /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real.ini
+docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-dist/ffmpeg
 docker exec "$name" cmp -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar
 docker exec "$name" cmp -s /opt/sagetv/comskip/comskip /usr/local/share/sagetv-options/comskip/comskip
 # A deliberate one-shot reset remains available; it is never the default.
-docker exec -e MIM_RESET_FROM_IMAGE=true -e XMLTV_RESET_FROM_IMAGE=true \
+docker exec -e XMLTV_RESET_FROM_IMAGE=true \
   -e COMSKIP_RESET_FROM_IMAGE=true "$name" /usr/local/bin/sagetv-options >/dev/null
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg_MIM
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real
-docker exec "$name" cmp -s /opt/sagetv/server/ffprobe /usr/local/share/sagetv-options/ffmpeg-mim/ffprobe
-docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg.real.ini /usr/local/share/sagetv-options/ffmpeg-mim/ffmpeg.real.ini
 docker exec "$name" cmp -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar
 docker exec "$name" cmp -s /opt/sagetv/comskip/comskip /usr/local/share/sagetv-options/comskip/comskip
 

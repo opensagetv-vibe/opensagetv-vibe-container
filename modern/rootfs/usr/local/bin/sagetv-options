@@ -113,56 +113,6 @@ awk -v value="$vibe_test_control" '
 ' "$properties" > "$properties_tmp"
 mv "$properties_tmp" "$properties"
 echo "Vibe MiniClient exact-path/channel test control: $vibe_test_control"
-if enabled "${MIM_ENABLED:-false}"; then
-  mim_assets=/usr/local/share/sagetv-options/ffmpeg-mim
-  mim_reset=false
-  enabled "${MIM_RESET_FROM_IMAGE:-false}" && mim_reset=true
-  if [[ ! -e "$home/ffmpeg.stock" && -e "$home/ffmpeg" ]]; then
-    mv "$home/ffmpeg" "$home/ffmpeg.stock"
-  fi
-  # Image assets seed a clean installation, but appdata owns the installed
-  # MIM files after that. This permits an administrator to replace only the
-  # files in the SageTV app folder without a container restart undoing it.
-  # If MIM was disabled previously, ffmpeg equals ffmpeg.stock and needs to be
-  # switched back to the MIM wrapper when the option is enabled again.
-  mim_seed=false
-  if [[ "$mim_reset" == true ]] || component_changed mim \
-      || [[ ! -e "$home/ffmpeg" || ! -e "$home/ffmpeg.real" \
-            || ! -e "$home/ffprobe" || ! -e "$home/ffmpeg.real.ini" ]]; then
-    mim_seed=true
-  fi
-  if [[ "$mim_seed" == true ]]; then
-    cp "$mim_assets/ffmpeg_MIM" "$home/ffmpeg"
-    cp "$mim_assets/ffmpeg.real" "$home/ffmpeg.real"
-    cp "$mim_assets/ffprobe" "$home/ffprobe"
-    cp "$mim_assets/ffmpeg.real.ini" "$home/ffmpeg.real.ini"
-    record_component mim
-  elif [[ -e "$home/ffmpeg.stock" ]] && cmp -s "$home/ffmpeg" "$home/ffmpeg.stock"; then
-    # MIM was just re-enabled; switch the active dispatcher without replacing
-    # the already-installed same-image MIM payload.
-    cp "$mim_assets/ffmpeg_MIM" "$home/ffmpeg"
-  fi
-  chmod 0755 "$home/ffmpeg" "$home/ffmpeg.real" "$home/ffprobe"
-  if [[ "$mim_reset" == true ]]; then
-    echo "FFmpeg/MIM restored from the image-pinned payload"
-  elif [[ "$mim_seed" == true ]]; then
-    echo "FFmpeg/MIM seeded for this Docker image"
-  else
-    echo "FFmpeg/MIM enabled; existing appdata MIM files preserved"
-  fi
-elif [[ -e "$home/ffmpeg.stock" ]]; then
-  mim_mode_file="$seed_state_dir/mim-mode"
-  previous_mim_mode="$(cat "$mim_mode_file" 2>/dev/null || true)"
-  if [[ "$previous_mim_mode" != disabled || ! -e "$home/ffmpeg" ]]; then
-    cp "$home/ffmpeg.stock" "$home/ffmpeg"
-    chmod 0755 "$home/ffmpeg"
-  fi
-fi
-if enabled "${MIM_ENABLED:-false}"; then
-  printf '%s\n' enabled > "$seed_state_dir/mim-mode"
-else
-  printf '%s\n' disabled > "$seed_state_dir/mim-mode"
-fi
 if [[ -n "${LICENCE_DATA:-}" ]]; then
   printf '%s' "$LICENCE_DATA" > "$home/activkey"
   chmod 0600 "$home/activkey"

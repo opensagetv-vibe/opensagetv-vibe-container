@@ -2,6 +2,12 @@
 
 ## Next
 
+- Removed Vibe FFmpeg/MIM binaries, INI seeding, enable/reset variables, image
+  labels, and container component updates from the server image. Stock SageTV
+  `ffmpeg` remains the no-plugin fallback; GPU/system runtimes remain available
+  for the separately installed OpenSageTV Vibe FFmpeg Plugin, which owns its
+  bridge, runtime, configuration, upgrades, and software fallback.
+
 - Updated repository CI to the current Node 24-based
   `actions/checkout@v7` release. The credential scan excludes its own workflow
   source so the forbidden-pattern expression cannot trigger a false positive.

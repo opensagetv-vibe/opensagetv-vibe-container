@@ -8,7 +8,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/opensagetv-vibe/opensagetv-vibe-container/issues</Support>
   <Project>https://github.com/opensagetv-vibe/opensagetv-vibe-core</Project>
-  <Overview>Clean Ubuntu 26.04/OpenJDK 11 SageTV server. Assign a unique br0 IP so it can run beside an existing SageTV installation. MIM is included by the release pipeline but disabled by default.</Overview>
+  <Overview>Clean Ubuntu 26.04/OpenJDK 11 SageTV server. Assign a unique br0 IP so it can run beside an existing SageTV installation. The optional OpenSageTV Vibe FFmpeg Plugin is installed separately and falls back to software when no compatible GPU is available.</Overview>
   <Category>MediaApp:Video MediaApp:Music MediaApp:Photos MediaServer:Video</Category>
   <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Icon>https://raw.githubusercontent.com/OpenSageTV/sagetv-dockers/master/resources/SageTVOS_icon.png</Icon>
@@ -40,8 +40,6 @@
   <Config Name="JVM Memory MB" Target="JAVA_MEM_MB" Default="2048" Mode="" Description="Maximum Java heap in MB." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="Hardware Decode" Target="HARDWARE_DECODE" Default="true" Mode="" Description="Allow configured GPU acceleration." Type="Variable" Display="always" Required="true" Mask="false"/>
   <Config Name="GPU Vendor" Target="GPU_VENDOR" Default="auto" Mode="" Description="auto, intel, amd, nvidia, or none." Type="Variable" Display="always" Required="true" Mask="false"/>
-  <Config Name="Enable FFmpeg/MIM" Target="MIM_ENABLED" Default="false" Mode="" Description="Experimental and reversible; disabled until live playback is reliable." Type="Variable" Display="always" Required="true" Mask="false"/>
-  <Config Name="Reset FFmpeg/MIM from Image" Target="MIM_RESET_FROM_IMAGE" Default="false" Mode="" Description="One-shot recovery option. Set true for one start to restore the image-pinned MIM files, then return it to false. Existing appdata MIM files are otherwise preserved." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="Reset XMLTV Importer from Image" Target="XMLTV_RESET_FROM_IMAGE" Default="false" Mode="" Description="One-shot recovery option. Set true for one start to restore the image-pinned XMLTV JAR, then return it to false." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="Reset Comskip from Image" Target="COMSKIP_RESET_FROM_IMAGE" Default="false" Mode="" Description="One-shot recovery option. Set true for one start to restore the image-pinned Comskip executable, then return it to false." Type="Variable" Display="advanced" Required="true" Mask="false"/>
   <Config Name="XMLTV EPG Provider" Target="XMLTV_IMPORT_PLUGIN" Default="xmltv.XMLTVImportPlugin" Mode="" Description="Registers the bundled XMLTV provider without requiring a legacy SageTV license. Keep this value unless using a different EPG import plugin." Type="Variable" Display="advanced" Required="true" Mask="false"/>

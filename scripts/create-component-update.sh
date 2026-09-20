@@ -5,12 +5,11 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 component="${1:-}"
 output_dir="${2:-$root/output/component-updates}"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
-mim_source="${MIM_SOURCE:-$root/../opensagetv-vibe-ffmpeg-mim}"
 xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
 tmdb_source="${TMDB_SOURCE:-$root/../opensagetv-vibe-tmdb}"
 
-case "$component" in core|mim|xmltv|tmdb|comskip) ;; *)
-  echo "Usage: $0 {core|mim|xmltv|tmdb|comskip} [output-directory]" >&2
+case "$component" in core|xmltv|tmdb|comskip) ;; *)
+  echo "Usage: $0 {core|xmltv|tmdb|comskip} [output-directory]" >&2
   exit 2
 esac
 
@@ -25,15 +24,6 @@ case "$component" in
     gzip -t "$source_file"
     cp "$source_file" "$tmp/payload/core.tar.gz"
     revision="$(git -C "$core_source" rev-parse HEAD)"
-    ;;
-  mim)
-    source_dir="$mim_source/output/linux-x64"
-    (cd "$source_dir" && sha256sum -c SHA256SUMS.txt >&2)
-    for name in ffmpeg_MIM ffmpeg.real ffprobe ffmpeg.real.ini; do
-      test -s "$source_dir/$name"
-      cp "$source_dir/$name" "$tmp/payload/$name"
-    done
-    revision="$(git -C "$mim_source" rev-parse HEAD)"
     ;;
   xmltv)
     source_file="$xmltv_source/output/packages/XMLTVImportPlugin.jar"

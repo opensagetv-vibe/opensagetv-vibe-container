@@ -14,9 +14,11 @@ echo "Active artifact SHA-256"
 for file in \
   "$appdata/server/Sage.jar" \
   "$appdata/server/ffmpeg" \
-  "$appdata/server/ffmpeg.real" \
-  "$appdata/server/ffprobe" \
-  "$appdata/server/ffmpeg.real.ini" \
+  "$appdata/server/SageTVTranscoder" \
+  "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg_MIM" \
+  "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg.real" \
+  "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffprobe" \
+  "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg.real.ini" \
   "$appdata/server/JARs/XMLTVImportPlugin.jar" \
   "$appdata/server/JARs/OpenSageTVVibeTMDB.jar" \
   "$appdata/server/JARs/sqlite-jdbc-3.53.2.1.jar" \
@@ -27,7 +29,7 @@ done
 if docker inspect "$container" >/dev/null 2>&1; then
   docker ps -a --filter "name=^/${container}$" --format 'Container={{.Names}} Image={{.Image}} Status={{.Status}}'
   if [[ "$(docker inspect "$container" --format '{{.State.Running}}')" == true ]] \
-      && [[ -x "$appdata/server/ffmpeg" ]]; then
-    docker exec "$container" /opt/sagetv/server/ffmpeg --mim-status || true
+      && [[ -x "$appdata/server/SageTVTranscoder" ]]; then
+    docker exec "$container" /opt/sagetv/server/SageTVTranscoder --mim-status || true
   fi
 fi

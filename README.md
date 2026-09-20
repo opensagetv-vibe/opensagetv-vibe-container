@@ -8,7 +8,7 @@ from one Dockerfile.
 
 The canonical interface is the sibling build-environment wrapper:
 `opensagetv-vibe-dev.ps1 all` on Windows or `opensagetv-vibe-dev.sh all` on
-Linux. It stages the locally tested Core, Linux MIM, and XMLTV outputs, builds
+Linux. It stages the locally tested Core and XMLTV outputs, builds
 both targets, starts a clean server, performs lifecycle-soak, discovery,
 plugin, and OpenDCT tests, and creates offline image exports. `build.sh` and
 `build.ps1` remain component
@@ -31,7 +31,8 @@ stored inside the archive and referenced by the Unraid XML. No workflow in this
 repository logs into a registry or executes `docker push`.
 
 The runtime image is a stable Ubuntu/Java/GPU environment. Ordinary Core,
-FFmpeg/MIM, XMLTV, TMDB, or Comskip changes do **not** require rebuilding that image.
+XMLTV, TMDB, Comskip, or separately installed FFmpeg-plugin changes do **not**
+require rebuilding that image.
 Build and validate the component in `opensagetv-vibe-dev`, create a verified
 component update, install it into appdata, and restart only SageTV. Use
 `runtime-image-status` to see whether an OS/container input actually changed;
@@ -40,13 +41,15 @@ debug fingerprints already match. Set `FORCE_RUNTIME_IMAGE_BUILD=true` only
 for an intentional runtime-baseline refresh.
 
 ```bash
-../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-package mim
+../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-package core
 ./scripts/deploy-component-update.sh \
-  output/component-updates/opensagetv-vibe-mim-REVISION.tar.gz \
+  output/component-updates/opensagetv-vibe-core-REVISION.tar.gz \
   UNRAID_HOST SSH_PRIVATE_KEY
 ```
 
-The same update path supports `core`, `mim`, `xmltv`, `tmdb`, and `comskip`. It verifies
+The same update path supports `core`, `xmltv`, `tmdb`, and `comskip`. The FFmpeg
+runtime is installed and updated through `opensagetv-vibe-SageTVFFmpegPlugin`,
+not as a container component. The component path verifies
 hashes, stops only the selected test container, backs up replaced files,
 installs atomically under appdata, restarts the container, and runs a
 component-specific health check. `rollback-component-update.sh` restores the
@@ -57,7 +60,7 @@ For component-only takeover and updates, use the consistent root interface in
 [`WORKFLOW.md`](WORKFLOW.md). Every launcher resolves from its own directory.
 
 The artifact staging script rejects missing files, an invalid Core gzip, an
-invalid XMLTV JAR, a failed MIM checksum set, or any source/destination hash
+invalid XMLTV JAR, or any source/destination hash
 mismatch. Runtime images receive OCI and component revision labels for the exact
 source commits used by the build.
 
@@ -97,16 +100,16 @@ The image includes Ubuntu 26's `libvpl2`, `libmfx-gen1.2`, Intel media driver,
 Mesa VAAPI/Vulkan runtime packages, and Ubuntu's supported FFmpeg runtime.
 The SageTV `ffmpeg` executable therefore has a complete matching Ubuntu 26
 runtime instead of depending on libraries omitted from a minimal image.
-`libmfx-gen1.2` supplies the Intel GPU
-implementation required for the bundled FFmpeg QSV session; `libvpl2` alone is
-only the dispatcher. FFmpeg/MIM 0.4.5 is included as a reversible option but
-remains disabled by default (`MIM_ENABLED=false`) pending Android MiniClient and
-physical AMD/NVIDIA commissioning.
+`libmfx-gen1.2` supplies the Intel GPU implementation required when an external
+FFmpeg plugin selects QSV; `libvpl2` alone is only the dispatcher. The image
+does not bundle, seed, enable, reset, or update Vibe FFmpeg/MIM. Without the
+optional plugin SageTV uses its stock `ffmpeg`; with the plugin installed, the
+plugin performs capability preflight and deterministic software fallback.
 
 ## Persistent appdata payload policy
 
-On a clean deployment the image seeds Core, `ffmpeg.stock`, optional MIM,
-XMLTV, Comskip, and plugin assets into appdata. Appdata is then authoritative:
+On a clean deployment the image seeds Core, stock `ffmpeg`/`ffmpeg.stock`,
+XMLTV, Comskip, and container-owned plugin assets into appdata. Appdata is then authoritative:
 manual or component-package replacements survive SageTV and Docker restarts.
 On an actual image update, only payloads whose image seed fingerprint changed
 are refreshed. Database, properties, plugin state, XMLTV profiles, recordings,

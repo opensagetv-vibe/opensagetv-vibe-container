@@ -15,13 +15,19 @@ Use the one unified development container to build the changed component, then
 package only that payload:
 
 ```bash
-../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-package mim
-../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-test mim
+../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-package core
+../opensagetv-vibe-build-env/opensagetv-vibe-dev.sh runtime-update-test core
 ```
 
-Valid names are `core`, `mim`, `xmltv`, `tmdb`, and `comskip`; `runtime-update-test
+Valid names are `core`, `xmltv`, `tmdb`, and `comskip`; `runtime-update-test
 all` runs the package/install/rollback self-test for every component. Updates
 are written under `output/component-updates` with a SHA-256 sidecar.
+
+FFmpeg/MIM is intentionally not a container component. Build its runtime in
+`opensagetv-vibe-ffmpeg-mim` and install/update it through
+`opensagetv-vibe-SageTVFFmpegPlugin`. The plugin owns `SageTVTranscoder` and
+`plugins/SageTVFFmpegPlugin/runtime`; the container retains stock `ffmpeg` as
+the no-plugin and failure fallback.
 
 Deploy a tested package to the isolated Unraid instance without rebuilding or
 reloading Docker:
@@ -42,6 +48,7 @@ and hash evidence and `scripts/rollback-component-update.sh` for recovery.
 Run `runtime-image-status` first. Rebuild production/debug images only when
 Ubuntu packages, Java, drivers, system libraries, the runtime Dockerfile,
 entrypoint/supervisor, or other container-environment inputs change. Core,
-MIM, XMLTV, TMDB, and Comskip source edits use component updates. `build.sh` uses
+XMLTV, TMDB, and Comskip source edits use component updates. FFmpeg/MIM uses
+the separate SageTV plugin lifecycle. `build.sh` uses
 BuildKit cache, skips matching fingerprints, and removes only obsolete
 OpenSageTV Vibe image layers; it never performs a global Docker prune.

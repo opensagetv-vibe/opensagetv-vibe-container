@@ -6,12 +6,12 @@ $debugImage = if ($env:OPENSAGETV_VIBE_SERVER_DEBUG_IMAGE) { $env:OPENSAGETV_VIB
 if (-not (Test-Path -LiteralPath $core)) { throw "Missing Core package: $core" }
 New-Item -ItemType Directory -Force -Path (Join-Path $root 'artifacts') | Out-Null
 Copy-Item -LiteralPath $core -Destination (Join-Path $root 'artifacts\sagetv-server-x86_64.tar.gz') -Force
-$mim = Join-Path $root '..\opensagetv-vibe-ffmpeg-mim\output\linux-x64'
 $xmltv = Join-Path $root '..\opensagetv-vibe-xmltv-import\output'
-if (-not (Test-Path "$mim\ffmpeg_MIM")) { throw "Missing Linux MIM output: $mim" }
 if (-not (Test-Path "$xmltv\packages\XMLTVImportPlugin.jar")) { throw "Missing XMLTV output: $xmltv" }
-New-Item -ItemType Directory -Force -Path (Join-Path $root 'artifacts\ffmpeg-mim'),(Join-Path $root 'artifacts\xmltv') | Out-Null
-Copy-Item "$mim\*" (Join-Path $root 'artifacts\ffmpeg-mim') -Recurse -Force
+New-Item -ItemType Directory -Force -Path (Join-Path $root 'artifacts\xmltv') | Out-Null
+if (Test-Path -LiteralPath (Join-Path $root 'artifacts\ffmpeg-mim')) {
+  Remove-Item -LiteralPath (Join-Path $root 'artifacts\ffmpeg-mim') -Recurse -Force
+}
 Copy-Item "$xmltv\packages\XMLTVImportPlugin.jar" (Join-Path $root 'artifacts\xmltv') -Force
 Copy-Item "$xmltv\config-examples" (Join-Path $root 'artifacts\xmltv') -Recurse -Force
 docker build --target production -t $productionImage -f (Join-Path $root 'modern\Dockerfile') $root
