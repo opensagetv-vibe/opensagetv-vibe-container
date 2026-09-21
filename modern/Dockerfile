@@ -30,6 +30,7 @@ RUN useradd --system --create-home --home-dir /opt/sagetv --shell /bin/bash sage
  && mkdir -p /usr/local/share/sagetv-dist /opt/sagetv/server /var/media /var/mediaext /var/tv
 COPY artifacts/sagetv-server-x86_64.tar.gz /tmp/core.tar.gz
 COPY artifacts/xmltv/ /usr/local/share/sagetv-options/xmltv/
+COPY artifacts/core-mcp/ /usr/local/share/sagetv-options/core-mcp/
 RUN tar -xzf /tmp/core.tar.gz -C /usr/local/share/sagetv-dist && rm /tmp/core.tar.gz \
  && test -f /usr/local/share/sagetv-dist/Sage.jar
 COPY modern/rootfs/ /
@@ -43,6 +44,7 @@ RUN set -e; \
     }; \
     hash_tree /usr/local/share/sagetv-dist > "$seed_ids/core.sha256"; \
     hash_tree /usr/local/share/sagetv-options/xmltv > "$seed_ids/xmltv.sha256"; \
+    hash_tree /usr/local/share/sagetv-options/core-mcp > "$seed_ids/core-mcp.sha256"; \
     hash_tree /usr/local/share/sagetv-options/comskip > "$seed_ids/comskip.sha256"; \
     sha256sum /usr/local/share/sagetv-options/gentuner-1.0.1.tgz | cut -d' ' -f1 > "$seed_ids/gentuner.sha256"; \
     sha256sum /usr/local/share/sagetv-options/commandir-1.0.3.1-amd64.tgz | cut -d' ' -f1 > "$seed_ids/commandir.sha256"; \
@@ -51,16 +53,18 @@ ARG CORE_VERSION=9.2.10-u26-dev
 ARG SOURCE_REVISION=unknown
 ARG CORE_REVISION=unknown
 ARG XMLTV_REVISION=unknown
+ARG CORE_MCP_REVISION=unknown
 ARG RUNTIME_ENVIRONMENT_FINGERPRINT=unknown
 LABEL org.opencontainers.image.title="OpenSageTV Vibe Server" \
       org.opencontainers.image.version="${CORE_VERSION}" \
       org.opencontainers.image.source="https://github.com/opensagetv-vibe/opensagetv-vibe-container" \
       org.opencontainers.image.revision="${SOURCE_REVISION}" \
       org.opensagetv.vibe.core.revision="${CORE_REVISION}" \
-      org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}"
+      org.opensagetv.vibe.xmltv-import.revision="${XMLTV_REVISION}" \
+      org.opensagetv.vibe.core-mcp-plugin.revision="${CORE_MCP_REVISION}"
 LABEL org.opensagetv.vibe.runtime-environment.fingerprint="${RUNTIME_ENVIRONMENT_FINGERPRINT}"
 VOLUME ["/opt/sagetv", "/var/media", "/var/mediaext", "/var/tv", "/unraid"]
-EXPOSE 8080 42024 7818 8270/udp 31100/udp 31099 16867/udp 16869/udp 16881
+EXPOSE 8080 42024 7818 8270/tcp 8270/udp 31100/udp 31099 16867/udp 16869/udp 16881
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 CMD pgrep -f 'java.*sage.Sage' >/dev/null || exit 1
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/sagetv-entrypoint"]
 

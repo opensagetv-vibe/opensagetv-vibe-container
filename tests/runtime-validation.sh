@@ -4,6 +4,7 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
 xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
+core_mcp_source="${CORE_MCP_SOURCE:-$root/../opensagetv-vibe-core-MCP-Plugin}"
 production_image="${OPENSAGETV_VIBE_SERVER_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11}"
 debug_image="${OPENSAGETV_VIBE_SERVER_DEBUG_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11-debug}"
 ca_image="${OPENSAGETV_VIBE_CA_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11}"
@@ -33,7 +34,7 @@ docker image inspect "$production_image" --format '{{range .Config.Env}}{{printl
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'HARDWARE_DECODE=true'
 docker image inspect "$production_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'VIBE_TEST_CONTROL=false'
 docker image inspect "$debug_image" --format '{{range .Config.Env}}{{println .}}{{end}}' | grep -qx 'SAGETV_DEBUG_IMAGE=true'
-for component in core xmltv comskip gentuner commandir; do
+for component in core xmltv core-mcp comskip gentuner commandir; do
   docker run --rm --entrypoint test "$production_image" \
     -s "/usr/local/share/sagetv-options/.seed-ids/$component.sha256"
 done
@@ -41,13 +42,14 @@ done
 for pair in \
   "org.opencontainers.image.revision=$(git -C "$root" rev-parse HEAD)" \
   "org.opensagetv.vibe.core.revision=$(git -C "$core_source" rev-parse HEAD)" \
-  "org.opensagetv.vibe.xmltv-import.revision=$(git -C "$xmltv_source" rev-parse HEAD)"; do
+  "org.opensagetv.vibe.xmltv-import.revision=$(git -C "$xmltv_source" rev-parse HEAD)" \
+  "org.opensagetv.vibe.core-mcp-plugin.revision=$(git -C "$core_mcp_source" rev-parse HEAD)"; do
   key="${pair%%=*}"; expected="${pair#*=}"
   test "$(docker image inspect "$production_image" --format "{{index .Config.Labels \"$key\"}}")" = "$expected"
 done
 
 docker run --rm --entrypoint bash "$debug_image" -lc \
-  'command -v gdb >/dev/null && command -v strace >/dev/null && test -f /usr/local/share/sagetv-dist/Sage.jar && test -s /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar && test ! -e /usr/local/share/sagetv-options/ffmpeg-mim'
+  'command -v gdb >/dev/null && command -v strace >/dev/null && test -f /usr/local/share/sagetv-dist/Sage.jar && test -s /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar && test -s /usr/local/share/sagetv-options/core-mcp/OpenSageTVVibeCoreMCPPlugin.jar && test ! -e /usr/local/share/sagetv-options/ffmpeg-mim'
 
 python3 - "$root/unRAID/opensagetv-vibe/sagetv-vibe-server-u26-gpu-j11.xml" "$ca_image" <<'PY'
 import sys
@@ -133,10 +135,28 @@ docker exec "$name" bash -lc \
   'test -z "$(ldd /opt/sagetv/server/ffmpeg | grep "not found" || true)" && /opt/sagetv/server/ffmpeg -hide_banner -version >/dev/null'
 docker exec "$name" test ! -e /opt/sagetv/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg_MIM
 docker exec "$name" test -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar
+docker exec "$name" test -s /opt/sagetv/server/JARs/OpenSageTVVibeCoreMCPPlugin.jar
 docker exec "$name" test -x /opt/sagetv/comskip/comskip
 docker exec "$name" test -s /opt/sagetv/server/common.properties
 docker exec "$name" test -s /opt/sagetv/server/xmltv_EPG123.profile
 docker exec "$name" grep -q '^epg/epg_import_plugin=xmltv.XMLTVImportPlugin$' /opt/sagetv/server/Sage.properties
+docker exec "$name" grep -q '^sagetv_core_plugins/opensagetvvibecoremcpplugin/enabled=true$' /opt/sagetv/server/Sage.properties
+docker exec "$name" grep -q '^vibe/core_mcp/bind_address=127.0.0.1$' /opt/sagetv/server/Sage.properties
+docker exec "$name" grep -q '^vibe/core_mcp/allow_lan=false$' /opt/sagetv/server/Sage.properties
+core_mcp_ready=0
+for _ in $(seq 1 30); do
+  if docker exec "$name" timeout 3 bash -lc \
+      'exec 3<>/dev/tcp/127.0.0.1/8270; printf "GET /health HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3; grep -q "200 OK" <&3'; then
+    core_mcp_ready=1
+    break
+  fi
+  sleep 1
+done
+test "$core_mcp_ready" = 1 || {
+  docker logs "$name" >&2
+  echo "ERROR: bundled Core MCP plugin health endpoint did not start" >&2
+  exit 1
+}
 docker exec "$name" grep -q '^miniclient/enable_vibe_watch_file_event=false$' /opt/sagetv/server/Sage.properties
 docker exec "$name" grep -q '^miniclient/enable_vibe_channel_set_event=false$' /opt/sagetv/server/Sage.properties
 runtime_ip="$(docker inspect "$name" --format "{{with index .NetworkSettings.Networks \"$network\"}}{{.IPAddress}}{{end}}")"
@@ -174,9 +194,10 @@ docker exec "$name" bash -lc '
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/ffmpeg
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/Sage.jar
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/JARs/XMLTVImportPlugin.jar
+  printf VIBE_USER_OVERRIDE >> /opt/sagetv/server/JARs/OpenSageTVVibeCoreMCPPlugin.jar
   printf VIBE_USER_OVERRIDE >> /opt/sagetv/comskip/comskip
   cd /opt/sagetv/server
-  sha256sum Sage.jar ffmpeg JARs/XMLTVImportPlugin.jar > .optional-user-override.sha256
+  sha256sum Sage.jar ffmpeg JARs/XMLTVImportPlugin.jar JARs/OpenSageTVVibeCoreMCPPlugin.jar > .optional-user-override.sha256
   sha256sum /opt/sagetv/comskip/comskip >> .optional-user-override.sha256
 '
 bash "$root/tests/runtime-restart-soak.sh" "$name"
@@ -187,6 +208,7 @@ docker exec "$name" /opt/sagetv/server/ffmpeg -hide_banner -version >/dev/null
 docker exec "$name" bash -lc '
   printf stale > /opt/sagetv/.image-seeds/core.sha256
   printf stale > /opt/sagetv/.image-seeds/xmltv.sha256
+  printf stale > /opt/sagetv/.image-seeds/core-mcp.sha256
   printf stale > /opt/sagetv/.image-seeds/comskip.sha256
 '
 docker restart --time 20 "$name" >/dev/null
@@ -202,6 +224,7 @@ test "$reseed_started" = 1
 docker exec "$name" cmp -s /opt/sagetv/server/Sage.jar /usr/local/share/sagetv-dist/Sage.jar
 docker exec "$name" cmp -s /opt/sagetv/server/ffmpeg /usr/local/share/sagetv-dist/ffmpeg
 docker exec "$name" cmp -s /opt/sagetv/server/JARs/XMLTVImportPlugin.jar /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar
+docker exec "$name" cmp -s /opt/sagetv/server/JARs/OpenSageTVVibeCoreMCPPlugin.jar /usr/local/share/sagetv-options/core-mcp/OpenSageTVVibeCoreMCPPlugin.jar
 docker exec "$name" cmp -s /opt/sagetv/comskip/comskip /usr/local/share/sagetv-options/comskip/comskip
 # A deliberate one-shot reset remains available; it is never the default.
 docker exec -e XMLTV_RESET_FROM_IMAGE=true \

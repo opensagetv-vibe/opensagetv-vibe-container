@@ -64,6 +64,12 @@ if enabled "${OPT_COMSKIP:-Y}"; then
   chmod 0755 /opt/sagetv/comskip/comskip
 fi
 mkdir -p "$home/JARs" "$home/.config/xmltv-examples"
+if [[ ! -e "$home/JARs/OpenSageTVVibeCoreMCPPlugin.jar" ]] || component_changed core-mcp; then
+  cp /usr/local/share/sagetv-options/core-mcp/OpenSageTVVibeCoreMCPPlugin.jar \
+    "$home/JARs/OpenSageTVVibeCoreMCPPlugin.jar"
+  record_component core-mcp
+  echo "OpenSageTV Vibe Core MCP Plugin installed from image asset"
+fi
 if enabled "${XMLTV_RESET_FROM_IMAGE:-false}" \
     || [[ ! -e "$home/JARs/XMLTVImportPlugin.jar" ]] || component_changed xmltv; then
   cp /usr/local/share/sagetv-options/xmltv/XMLTVImportPlugin.jar "$home/JARs/XMLTVImportPlugin.jar"
@@ -93,6 +99,56 @@ awk -v value="$xmltv_plugin" '
 ' "$properties" > "$properties_tmp"
 mv "$properties_tmp" "$properties"
 echo "XMLTV EPG provider registered: $xmltv_plugin (no license required)"
+# Register the bounded Core control bridge as a normal SageTV Standard plugin.
+# Its listener remains loopback-only by default and generates its own token.
+# Preserve administrator enable/listener/token choices across image upgrades.
+set_default_property() {
+  local key="$1" value="$2" temporary="$properties.core-mcp.tmp"
+  if ! grep -Fq "${key}=" "$properties"; then
+    printf '%s=%s\n' "$key" "$value" >> "$properties"
+  fi
+}
+set_managed_property() {
+  local key="$1" value="$2" temporary="$properties.core-mcp.tmp"
+  awk -v key="$key" -v value="$value" '
+    BEGIN { found=0 }
+    index($0, key "=") == 1 { print key "=" value; found=1; next }
+    { print }
+    END { if (!found) print key "=" value }
+  ' "$properties" > "$temporary"
+  mv "$temporary" "$properties"
+}
+core_mcp_prefix='sagetv_core_plugins/opensagetvvibecoremcpplugin/'
+set_managed_property "${core_mcp_prefix}author" 'OpenSageTV Vibe'
+set_managed_property "${core_mcp_prefix}beta" 'true'
+set_managed_property "${core_mcp_prefix}date" '1789880400000'
+set_managed_property "${core_mcp_prefix}demovideos" ''
+set_managed_property "${core_mcp_prefix}dependency/SageTV/maxversion" ''
+set_managed_property "${core_mcp_prefix}dependency/SageTV/minversion" '9.2.2'
+set_managed_property "${core_mcp_prefix}dependency/SageTV/type" 'Core'
+set_managed_property "${core_mcp_prefix}desc" 'Authenticated bounded SageTV server controls for external MCP automation.'
+set_managed_property "${core_mcp_prefix}desktop" 'false'
+set_default_property "${core_mcp_prefix}enabled" 'true'
+set_managed_property "${core_mcp_prefix}impl" 'org.opensagetv.vibe.coremcp.SageTVCoreMcpPlugin'
+set_default_property "${core_mcp_prefix}installdate" '1789920000000'
+set_default_property "${core_mcp_prefix}installindex" '1000'
+set_managed_property "${core_mcp_prefix}name" 'OpenSageTV Vibe Core MCP Plugin'
+set_managed_property "${core_mcp_prefix}relnotes" 'See the bundled project documentation.'
+set_default_property "${core_mcp_prefix}reset" 'false'
+set_managed_property "${core_mcp_prefix}respath" ''
+set_managed_property "${core_mcp_prefix}screenshots" ''
+set_managed_property "${core_mcp_prefix}server" 'true'
+set_managed_property "${core_mcp_prefix}stvimports" ''
+set_managed_property "${core_mcp_prefix}type" 'Standard'
+core_mcp_version="$(tr -d '\r\n' < /usr/local/share/sagetv-options/core-mcp/VERSION)"
+[[ -n "$core_mcp_version" ]] || core_mcp_version='0.1.1'
+set_managed_property "${core_mcp_prefix}version" "$core_mcp_version"
+set_managed_property "${core_mcp_prefix}webpages" 'https\://github.com/opensagetv-vibe/opensagetv-vibe-core-MCP-Plugin'
+set_default_property 'vibe/core_mcp/enabled' 'true'
+set_default_property 'vibe/core_mcp/bind_address' '127.0.0.1'
+set_default_property 'vibe/core_mcp/port' '8270'
+set_default_property 'vibe/core_mcp/allow_lan' 'false'
+echo 'OpenSageTV Vibe Core MCP Plugin registered (secure loopback default)'
 # The exact-path Watch and exact-channel MiniClient events are only for
 # debug/commissioning. Keep them disabled in clean production installs unless
 # the administrator explicitly enables the advanced container option.

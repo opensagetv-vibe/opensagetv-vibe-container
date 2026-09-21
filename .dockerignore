@@ -13,6 +13,8 @@ artifacts/*
 !artifacts/ffmpeg-mim/**
 !artifacts/xmltv/
 !artifacts/xmltv/**
+!artifacts/core-mcp/
+!artifacts/core-mcp/**
 
 !resources/
 resources/*

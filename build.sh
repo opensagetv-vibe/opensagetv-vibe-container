@@ -7,8 +7,16 @@ core_version="${OPENSAGETV_VIBE_CORE_VERSION:-9.2.10-u26-j11}"
 source_revision="$(git -C "$root" rev-parse HEAD)"
 core_revision="$(git -C "${CORE_SOURCE:-$root/../opensagetv-vibe-core}" rev-parse HEAD)"
 xmltv_revision="$(git -C "${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}" rev-parse HEAD)"
+core_mcp_revision="$(git -C "${CORE_MCP_SOURCE:-$root/../opensagetv-vibe-core-MCP-Plugin}" rev-parse HEAD)"
 previous_production="$(docker image inspect "$production_image" --format '{{.Id}}' 2>/dev/null || true)"
 previous_debug="$(docker image inspect "$debug_image" --format '{{.Id}}' 2>/dev/null || true)"
+
+# Core MCP is a required image seed and participates in the runtime
+# fingerprint. Direct builds must stage it before deciding that an installed
+# image can be reused; the unified runtime path has already staged it.
+if [[ "${SKIP_ARTIFACT_STAGE:-false}" != true ]]; then
+  bash "$root/stage-artifacts.sh"
+fi
 runtime_fingerprint="$(bash "$root/scripts/runtime-environment-fingerprint.sh")"
 installed_fingerprint="$(docker image inspect "$production_image" \
   --format '{{index .Config.Labels "org.opensagetv.vibe.runtime-environment.fingerprint"}}' 2>/dev/null || true)"
@@ -26,15 +34,13 @@ if [[ "${FORCE_RUNTIME_IMAGE_BUILD:-false}" != true \
   exit 0
 fi
 
-if [[ "${SKIP_ARTIFACT_STAGE:-false}" != true ]]; then
-  bash "$root/stage-artifacts.sh"
-fi
 common_args=(
   --platform linux/amd64
   --build-arg "CORE_VERSION=$core_version"
   --build-arg "SOURCE_REVISION=$source_revision"
   --build-arg "CORE_REVISION=$core_revision"
   --build-arg "XMLTV_REVISION=$xmltv_revision"
+  --build-arg "CORE_MCP_REVISION=$core_mcp_revision"
   --build-arg "RUNTIME_ENVIRONMENT_FINGERPRINT=$runtime_fingerprint"
   -f "$root/modern/Dockerfile"
 )

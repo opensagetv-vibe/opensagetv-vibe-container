@@ -20,6 +20,7 @@ for file in \
   "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffprobe" \
   "$appdata/server/plugins/SageTVFFmpegPlugin/runtime/ffmpeg.real.ini" \
   "$appdata/server/JARs/XMLTVImportPlugin.jar" \
+  "$appdata/server/JARs/OpenSageTVVibeCoreMCPPlugin.jar" \
   "$appdata/server/JARs/OpenSageTVVibeTMDB.jar" \
   "$appdata/server/JARs/sqlite-jdbc-3.53.2.1.jar" \
   "$appdata/server/JARs/gson-2.14.0.jar" \

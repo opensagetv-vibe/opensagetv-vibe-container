@@ -2,6 +2,15 @@
 
 ## Next
 
+- Bundled the stock-compatible OpenSageTV Vibe Core MCP Standard plugin in
+  every production and debug image. Clean and upgraded appdata receive the
+  tested JAR and plugin registration automatically, while the secure
+  loopback-only listener, generated bearer token, and administrator settings
+  remain persistent. Runtime validation now proves plugin startup and health.
+- Included the required Core MCP seed in the runtime-image fingerprint and
+  staged it before direct-build reuse decisions, preventing a plugin-only
+  revision from incorrectly retaining an older image.
+
 - Removed Vibe FFmpeg/MIM binaries, INI seeding, enable/reset variables, image
   labels, and container component updates from the server image. Stock SageTV
   `ffmpeg` remains the no-plugin fallback; GPU/system runtimes remain available

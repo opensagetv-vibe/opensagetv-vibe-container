@@ -8,7 +8,7 @@ from one Dockerfile.
 
 The canonical interface is the sibling build-environment wrapper:
 `opensagetv-vibe-dev.ps1 all` on Windows or `opensagetv-vibe-dev.sh all` on
-Linux. It stages the locally tested Core and XMLTV outputs, builds
+Linux. It stages the locally tested Core, XMLTV, and Core MCP plugin outputs, builds
 both targets, starts a clean server, performs lifecycle-soak, discovery,
 plugin, and OpenDCT tests, and creates offline image exports. `build.sh` and
 `build.ps1` remain component
@@ -85,6 +85,16 @@ Reusable `common.properties` and `xmltv_*.profile` files are seeded directly in
 the SageTV server root on first start. Existing user-modified profiles are not
 overwritten on an image upgrade. Provider examples remain under
 `.config/xmltv-examples`.
+
+Every Vibe server image also includes and registers the bounded
+`OpenSageTVVibeCoreMCPPlugin` Standard plugin. The plugin starts enabled but
+securely listens only on `127.0.0.1:8270` and generates a unique bearer token.
+An administrator must explicitly allow a LAN listener before an external MCP
+adapter can connect. Image upgrades refresh the tested plugin JAR when its
+seed fingerprint changes while preserving its enable state, listener choices,
+and token in persistent appdata. The exact Core MCP seed also participates in
+the image-reuse fingerprint, so a later plugin revision cannot silently retain
+an older image.
 The Unraid template maps `/mnt/user` to `/unraid` so provider files such as
 `/unraid/appdata/xmltvdata/*.xml` remain readable. A clean install creates
 `Sage.properties` before applying these container-managed defaults.
@@ -109,7 +119,7 @@ plugin performs capability preflight and deterministic software fallback.
 ## Persistent appdata payload policy
 
 On a clean deployment the image seeds Core, stock `ffmpeg`/`ffmpeg.stock`,
-XMLTV, Comskip, and container-owned plugin assets into appdata. Appdata is then authoritative:
+XMLTV, Core MCP, Comskip, and container-owned plugin assets into appdata. Appdata is then authoritative:
 manual or component-package replacements survive SageTV and Docker restarts.
 On an actual image update, only payloads whose image seed fingerprint changed
 are refreshed. Database, properties, plugin state, XMLTV profiles, recordings,

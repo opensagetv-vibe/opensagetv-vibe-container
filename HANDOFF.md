@@ -15,13 +15,37 @@ deployment. Changed-files packages live in `artifacts/downloads`.
 
 The container repository is now integrated into the one reusable
 `opensagetv-vibe-dev` workflow. `stage-artifacts.sh` validates and stages the
-exact Core and XMLTV outputs; `build.sh` labels production/debug
+exact Core, XMLTV, and Core MCP plugin outputs; `build.sh` labels production/debug
 images with all component commits; `tests/runtime-validation.sh` creates a
 clean appdata volume, verifies SageTV health, one supervisor-controlled JVM
 recovery, three full restart cycles, zero zombies, bounded lifecycle metrics,
 UDP discovery, TCP service, XMLTV selection, OpenDCT protocol behavior, and
 then proves its temporary container, network, anonymous volumes, and named
 volume were removed.
+
+As of 2026-09-20, every Vibe image includes the tested
+`OpenSageTVVibeCoreMCPPlugin.jar`, registers it as an enabled SageTV Standard
+plugin, and verifies its loopback health endpoint in clean-runtime testing.
+The secure default is `127.0.0.1:8270` with LAN access disabled and a generated
+bearer token. Existing appdata keeps its administrator-selected enable state,
+listener settings, and token across image updates; only a changed seeded JAR
+is refreshed.
+
+The current production image is
+`sha256:ac844ebf288eab9b3d9be5a77ef5038b5bb179e76ca44ffad3c3b8530bbd8286`
+and the debug image is
+`sha256:f9b4f5177b003d7f5eb2fafa6dbe7b0d32993f5e60c9bdc3e39e958b51fd8dc2`.
+Both carry runtime fingerprint
+`4e0bae1443cf5f113495d3d3646912ec641c022a3ae4ba314fa9ec8ff5f8f9b7`
+and Core MCP source revision `417fe04c9a75939244f5576ee1638eedd8ae96cd`.
+The production image passed the complete clean runtime/JVM-recovery/restart
+validation. Its exported config ID
+`sha256:c8813f8babe45a47293a15d2606809c5de49bfc5470dfce94a55e5c5107873b6`
+is commissioned on `.232`; SageTV loaded Core MCP version `0.1.1` and its
+loopback `/health` endpoint returned HTTP 200. The immediately prior working
+container remains recoverable as
+`sagetv-vibe-server-u26-gpu-j11-rollback-20260920-193339`; the earlier
+pre-final-image rollback is also retained.
 
 As of 2026-09-20, the container no longer bundles or seeds Vibe FFmpeg/MIM.
 It retains stock SageTV `ffmpeg` and optional GPU/system driver libraries.
@@ -32,7 +56,7 @@ stock FFmpeg or the plugin runtime's deterministic software path. Historical
 MIM component-update notes below describe the superseded pre-plugin design.
 
 On 2026-08-30 the runtime workflow moved to Buildx/BuildKit plus an explicit
-environment fingerprint. The canonical production/debug image IDs are
+environment fingerprint. The production/debug image IDs at that point were
 `sha256:89af7475dec66aef328113f9de3b33bf24a656e8b4b6de44153429e4e0d1613a`
 and
 `sha256:89d55c387a27cacf67c3021c11123cd97b16a897fd2153a9063f3d83c064f127`;
