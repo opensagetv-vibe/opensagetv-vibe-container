@@ -52,3 +52,11 @@ XMLTV, TMDB, and Comskip source edits use component updates. FFmpeg/MIM uses
 the separate SageTV plugin lifecycle. `build.sh` uses
 BuildKit cache, skips matching fingerprints, and removes only obsolete
 OpenSageTV Vibe image layers; it never performs a global Docker prune.
+
+When commissioning a newly loaded runtime image,
+`scripts/recreate-unraid-test-container.py` preserves the previous Vibe test
+container only until the replacement passes health, expected-IP, and stability
+verification. Successful verification removes the old stopped container and
+its unreferenced Vibe image automatically. Use `--retain-rollback` only when an
+explicit diagnostic rollback gate requires it. The protected production
+container and unrelated Unraid resources remain outside this workflow.

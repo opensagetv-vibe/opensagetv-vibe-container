@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Recreate one explicitly named Unraid test container from a new image.
 
-The old container is retained, stopped, under a timestamped rollback name.  If
-creation, startup, or the Docker health check fails, this script removes only
-the failed replacement and restores the old container automatically.
+The old container is retained under a timestamped rollback name while the new
+container starts and completes its health/IP/stability gate. A failed gate
+restores the old container automatically. After a successful gate, the old
+container and its unreferenced Vibe image are removed by default.
 """
 
 import argparse
@@ -18,6 +19,10 @@ import time
 
 PROTECTED_CONTAINERS = {"sagetvopen-sagetv-server-java11"}
 ENV_NAME = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+VIBE_IMAGE_PREFIXES = (
+    "sagetv-vibe-server-u26-gpu-j11:",
+    "ghcr.io/opensagetv-vibe/opensagetv-vibe-server:",
+)
 
 
 def run(*args, capture=True, check=True):
@@ -156,6 +161,61 @@ def wait_healthy(name, timeout):
     raise RuntimeError(f"replacement did not become healthy within {timeout} seconds")
 
 
+def wait_stably_healthy(name, expected_ip, seconds):
+    """Require the replacement to remain healthy at its expected IP."""
+    deadline = time.monotonic() + seconds
+    current = inspect_container(name)
+    while True:
+        state = current["State"]
+        if not state.get("Running") or state.get("Health", {}).get("Status") != "healthy":
+            raise RuntimeError("replacement lost health during the stability gate")
+        addresses = [item.get("IPAddress") for item in current["NetworkSettings"]["Networks"].values()]
+        if expected_ip not in addresses:
+            raise RuntimeError(f"replacement lost expected IP {expected_ip}")
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return current
+        time.sleep(min(2, remaining))
+        current = inspect_container(name)
+
+
+def image_is_vibe_owned(image):
+    tags = image.get("RepoTags") or []
+    return all(tag == "<none>:<none>" or tag.startswith(VIBE_IMAGE_PREFIXES) for tag in tags)
+
+
+def remove_verified_rollback(rollback, active_name, old_image_id):
+    """Remove only the verified test rollback and its unreferenced Vibe image."""
+    prefix = f"{active_name}-rollback-"
+    if not rollback.startswith(prefix):
+        raise RuntimeError(f"refusing non-Vibe rollback name: {rollback}")
+    rollback_state = inspect_container(rollback)
+    if rollback_state["State"].get("Running"):
+        raise RuntimeError(f"refusing to remove running rollback: {rollback}")
+
+    active = inspect_container(active_name)
+    active_image_id = active.get("Image")
+    run("docker", "rm", rollback, capture=False)
+    print(f"ROLLBACK REMOVED: {rollback}")
+
+    if not old_image_id or old_image_id == active_image_id:
+        return
+    references = run(
+        "docker", "ps", "--all", "--filter", f"ancestor={old_image_id}", "--quiet"
+    ).stdout.strip()
+    if references:
+        print(f"OLD IMAGE RETAINED (still referenced): {old_image_id}")
+        return
+    image_result = run("docker", "image", "inspect", old_image_id, check=False)
+    if image_result.returncode != 0:
+        return
+    image = json.loads(image_result.stdout)[0]
+    if not image_is_vibe_owned(image):
+        raise RuntimeError(f"refusing to remove image with a non-Vibe tag: {old_image_id}")
+    run("docker", "image", "rm", old_image_id, capture=False)
+    print(f"OLD VIBE IMAGE REMOVED: {old_image_id}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--container", required=True)
@@ -164,6 +224,17 @@ def main():
     parser.add_argument("--backup-dir", required=True)
     parser.add_argument("--health-timeout", type=int, default=180)
     parser.add_argument(
+        "--verification-soak-seconds",
+        type=int,
+        default=30,
+        help="continuous healthy/IP stability time before old-container cleanup",
+    )
+    parser.add_argument(
+        "--retain-rollback",
+        action="store_true",
+        help="explicitly retain the stopped prior container after verification",
+    )
+    parser.add_argument(
         "--set-env",
         action="append",
         default=[],
@@ -171,6 +242,9 @@ def main():
         help="replace or add one environment value in the recreated test container",
     )
     args = parser.parse_args()
+
+    if args.verification_soak_seconds < 0:
+        raise SystemExit("verification soak seconds must not be negative")
 
     if args.container in PROTECTED_CONTAINERS:
         raise SystemExit(f"refusing protected container: {args.container}")
@@ -184,6 +258,7 @@ def main():
     if args.expected_ip not in current_ips:
         raise SystemExit(f"expected IP {args.expected_ip} not assigned to the test container")
     run("docker", "image", "inspect", args.image)
+    old_image_id = old.get("Image")
 
     stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     rollback = f"{args.container}-rollback-{stamp}"
@@ -215,6 +290,9 @@ def main():
         )
         if new_ip != args.expected_ip:
             raise RuntimeError(f"replacement IP is {new_ip}, expected {args.expected_ip}")
+        current = wait_stably_healthy(
+            args.container, args.expected_ip, args.verification_soak_seconds
+        )
     except Exception:
         if replacement_created:
             run("docker", "rm", "--force", args.container, capture=False, check=False)
@@ -225,8 +303,15 @@ def main():
     finally:
         env_path.unlink(missing_ok=True)
 
+    if args.retain_rollback:
+        print(f"ROLLBACK RETAINED BY REQUEST: {rollback}")
+    else:
+        # This runs only after the complete replacement gate. Cleanup failure
+        # leaves the verified new container active and makes the task fail for
+        # explicit operator attention; it never tears down the good replacement.
+        remove_verified_rollback(rollback, args.container, old_image_id)
+
     print(f"REDEPLOY PASSED: {args.container} is healthy at {args.expected_ip}")
-    print(f"ROLLBACK RETAINED: {rollback}")
     print(f"INSPECT BACKUP: {inspect_path}")
 
 

@@ -31,5 +31,6 @@ jobs:
           for script in pushDockers.sh crushftp/pushDocker.sh sagetv-buildbase/pushit.sh sagetv-build/pushit.sh; do
             grep -q 'historical registry publication is disabled' "$script"
           done
+          python3 -m unittest discover -s tests -p 'test_*.py'
           ! grep -R -n -E 'gh auth token|docker login.*--password|password:[^[:space:]]+' \
             --exclude-dir=.git --exclude-dir=.github --exclude-dir=artifacts --exclude-dir=output .

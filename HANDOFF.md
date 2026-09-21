@@ -42,10 +42,12 @@ The production image passed the complete clean runtime/JVM-recovery/restart
 validation. Its exported config ID
 `sha256:c8813f8babe45a47293a15d2606809c5de49bfc5470dfce94a55e5c5107873b6`
 is commissioned on `.232`; SageTV loaded Core MCP version `0.1.1` and its
-loopback `/health` endpoint returned HTTP 200. The immediately prior working
-container remains recoverable as
-`sagetv-vibe-server-u26-gpu-j11-rollback-20260920-193339`; the earlier
-pre-final-image rollback is also retained.
+loopback `/health` endpoint returned HTTP 200. On 2026-09-21 the two stopped
+Vibe rollback containers and only their unreferenced Vibe images were removed;
+the active `sagetv-vibe-server-u26-gpu-j11` container remained unchanged,
+running, and healthy. Future verified replacement runs now clean the prior
+container/image automatically after a 30-second stability gate. Failure before
+that gate still restores the old container.
 
 As of 2026-09-20, the container no longer bundles or seeds Vibe FFmpeg/MIM.
 It retains stock SageTV `ffmpeg` and optional GPU/system driver libraries.

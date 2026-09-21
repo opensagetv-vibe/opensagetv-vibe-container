@@ -79,6 +79,15 @@ server. Its container name is `sagetv-vibe-server-u26-gpu-j11` and its appdata
 default is `/mnt/user/appdata/sagetv-vibe-server-u26-gpu-j11`; no
 configuration is migrated.
 
+The guarded `scripts/recreate-unraid-test-container.py` replacement helper
+keeps the previous Vibe container only while the replacement passes Docker
+health, expected-IP, and a default 30-second continuous stability gate. It
+automatically restores the previous container if that gate fails. After the
+gate succeeds, it removes the stopped prior container and its unreferenced
+Vibe-owned image; it never prunes globally or targets another container.
+`--retain-rollback` is available only for an intentional rollback
+investigation.
+
 The bundled XMLTV importer is registered automatically as
 `xmltv.XMLTVImportPlugin`; SageTV's obsolete EPG license service is not used.
 Reusable `common.properties` and `xmltv_*.profile` files are seeded directly in

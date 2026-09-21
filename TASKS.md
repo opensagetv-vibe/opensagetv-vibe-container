@@ -5,5 +5,3 @@ recorded in `CHANGELOG.md` and `HANDOFF.md`.
 
 - [ ] Test Intel QSV, AMD VAAPI, and NVIDIA paths on real hardware, including
   deterministic software fallback after hardware initialization failure.
-- [ ] Exercise the retained rollback container and record the exported archive
-  SHA-256 before publishing the final manually commissioned Unraid template.

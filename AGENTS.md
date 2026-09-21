@@ -10,6 +10,14 @@ FFmpeg-plugin ownership, software hardware fallback, Tini/supervisor behavior,
 Unraid coexistence, and
 temporary-resource cleanup. Do not create per-version/prompt/review documents.
 
+For every Unraid Vibe runtime-image replacement, use
+`scripts/recreate-unraid-test-container.py`. Keep the previous container only
+until the replacement passes health, expected-IP, and stability verification;
+then remove that stopped Vibe rollback container and its unreferenced Vibe
+image as part of the same task. Use `--retain-rollback` only when the user
+explicitly requests a rollback investigation. Never touch the protected
+production SageTV container or unrelated Unraid resources.
+
 
 ## Stock-server test-control policy
 

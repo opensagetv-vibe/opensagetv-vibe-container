@@ -2,6 +2,12 @@
 
 ## Next
 
+- Changed verified Unraid image replacement to retain the prior Vibe container
+  only during health/IP/stability validation. After the default 30-second
+  stability gate, the helper removes that stopped rollback container and its
+  unreferenced Vibe-owned image. Failed replacements still restore the prior
+  container automatically; `--retain-rollback` is an explicit diagnostic-only
+  override.
 - Bundled the stock-compatible OpenSageTV Vibe Core MCP Standard plugin in
   every production and debug image. Clean and upgraded appdata receive the
   tested JAR and plugin registration automatically, while the secure
