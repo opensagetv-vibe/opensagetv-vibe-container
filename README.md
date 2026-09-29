@@ -6,6 +6,15 @@ OpenJDK 11. It supports Intel QSV, AMD VAAPI, and NVIDIA device integration,
 uses an in-container restart supervisor, and has production and debug targets
 from one Dockerfile.
 
+The immediate upstream goal is for both canonical stock SageTV and Vibe Core
+to run on this current-Ubuntu foundation. The required canonical Core reviews
+are `google/sagetv` #516 (container-configurable launcher), #519 (source-clean
+build), #528 (GCC/64-bit native compatibility), and the separable Ubuntu/
+ImageLoader portions of #529. After those changes pass a stock-Core lane, a
+separate, narrowly scoped PR to `OpenSageTV/sagetv-dockers` will propose the
+current-Ubuntu runtime image beside the legacy image. Vibe-only plugins and
+commissioning policy are not prerequisites for that stock image.
+
 The canonical interface is the sibling build-environment wrapper:
 `opensagetv-vibe-dev.ps1 all` on Windows or `opensagetv-vibe-dev.sh all` on
 Linux. It stages the locally tested Core, XMLTV, and Core MCP plugin outputs, builds

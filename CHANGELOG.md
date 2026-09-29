@@ -2,6 +2,11 @@
 
 ## Next
 
+- Made canonical-and-Vibe current-Ubuntu validation the top container priority.
+  Documented the required `google/sagetv` Core approvals (#516, #519, #528,
+  and separable #529 changes), the stock-Core runtime lane, and the later
+  focused `OpenSageTV/sagetv-dockers` PR boundary.
+
 - Changed verified Unraid image replacement to retain the prior Vibe container
   only during health/IP/stability validation. After the default 30-second
   stability gate, the helper removes that stopped rollback container and its

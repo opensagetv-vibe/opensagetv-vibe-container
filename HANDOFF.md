@@ -1,5 +1,16 @@
 # Container handoff
 
+## Top priority: canonical and Vibe current-Ubuntu runtime
+
+The next container milestone must prove the same Ubuntu 26/non-root/Java 11/GPU
+driver foundation with both canonical stock Core and Vibe Core. Required Core
+reviews are `google/sagetv` #516, #519, #528, and the separable portions of
+#529. Only after the stock-Core lane passes should a focused
+`OpenSageTV/sagetv-dockers` PR add the current-Ubuntu runtime beside the legacy
+image. That PR owns image packages, entrypoint/supervisor, health checks,
+device mappings, stock-FFmpeg fallback, and migration documentation; it must
+not require Vibe-only Core behavior or plugins.
+
 ## Publication policy
 
 Publish this repository's source and the unified pipeline's checksummed
