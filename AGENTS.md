@@ -18,6 +18,11 @@ image as part of the same task. Use `--retain-rollback` only when the user
 explicitly requests a rollback investigation. Never touch the protected
 production SageTV container or unrelated Unraid resources.
 
+Release validation is impact-based: rerun only gates the release changes could
+affect. Do not repeat unrelated completed gates. Run the full gate suite only
+when the user explicitly requests it or a broad dependency/architecture change
+requires it, and document that reason and scope.
+
 
 ## Stock-server test-control policy
 
