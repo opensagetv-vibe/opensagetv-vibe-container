@@ -1,7 +1,13 @@
 # OpenSageTV Vibe Container tasks
 
-This is the only active container backlog. Completed work is removed and
-recorded in `CHANGELOG.md` and `HANDOFF.md`.
+> **Pre-commit task maintenance:** Immediately before every repository commit, move
+> completed `[x]` items out of active sections and into
+> `## Checklist change ledger`. Preserve IDs, evidence, and context; never
+> discard completion history. Active sections contain unchecked work only.
+
+This is the only active container backlog. Completed work moves to the
+checklist change ledger; release evidence is also recorded in `CHANGELOG.md`
+and `HANDOFF.md`.
 
 - [ ] TOP PRIORITY: validate one current-Ubuntu runtime design with both a
   canonical stock SageTV Core payload and the Vibe Core payload. Prove clean
@@ -13,3 +19,5 @@ recorded in `CHANGELOG.md` and `HANDOFF.md`.
   `google/sagetv` Core PRs and stock-runtime evidence are documented.
 - [ ] Test Intel QSV, AMD VAAPI, and NVIDIA paths on real hardware, including
   deterministic software fallback after hardware initialization failure.
+
+## Checklist change ledger
