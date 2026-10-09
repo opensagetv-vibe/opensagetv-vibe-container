@@ -21,3 +21,8 @@ and `HANDOFF.md`.
   deterministic software fallback after hardware initialization failure.
 
 ## Checklist change ledger
+
+- 2026-10-08 pre-commit source-sync review: workflow policy only, no runtime
+  image replacement or server restart. Four guarded-cleanup unit contracts and
+  common workflow checks pass; existing hardware/runtime tasks remain open.
+  Completed items are ledger-only; workspace execution order reviewed305.
