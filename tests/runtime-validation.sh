@@ -3,7 +3,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
-xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
+xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-Plugin}"
 core_mcp_source="${CORE_MCP_SOURCE:-$root/../opensagetv-vibe-core-MCP-Plugin}"
 production_image="${OPENSAGETV_VIBE_SERVER_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11}"
 debug_image="${OPENSAGETV_VIBE_SERVER_DEBUG_IMAGE:-ghcr.io/opensagetv-vibe/opensagetv-vibe-server:u26-gpu-j11-debug}"

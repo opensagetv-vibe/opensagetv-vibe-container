@@ -5,7 +5,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 component="${1:-}"
 output_dir="${2:-$root/output/component-updates}"
 core_source="${CORE_SOURCE:-$root/../opensagetv-vibe-core}"
-xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-import}"
+xmltv_source="${XMLTV_SOURCE:-$root/../opensagetv-vibe-xmltv-Plugin}"
 tmdb_source="${TMDB_SOURCE:-$root/../opensagetv-vibe-tmdb}"
 
 case "$component" in core|xmltv|tmdb|comskip) ;; *)

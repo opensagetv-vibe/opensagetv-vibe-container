@@ -1,5 +1,15 @@
 # Container handoff
 
+## XMLTV source rename (2026-10-18)
+
+Default XMLTV_SOURCE/XMLTV_OUTPUT paths now follow the renamed sibling
+opensagetv-vibe-xmltv-Plugin. Legacy XMLTVImportPlugin.jar, internal XMLTV
+component/seed/image-label names and current runtime/bootstrap behavior are
+unchanged. This is source-path integration, not an image replacement or a
+claim that existing appdata has enrolled the new Standard wrapper. Install
+that wrapper through the SageTV plugin manager as documented by its project.
+No Core/container restart or user settings change is required for this edit.
+
 ## Top priority: canonical and Vibe current-Ubuntu runtime
 
 The next container milestone must prove the same Ubuntu 26/non-root/Java 11/GPU

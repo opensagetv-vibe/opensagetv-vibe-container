@@ -22,6 +22,12 @@ and `HANDOFF.md`.
 
 ## Checklist change ledger
 
+- [x] **XMLTV-PLUGIN-002 source dependency (2026-10-18).** Update five
+  default sibling source/output paths for build/stage/update/runtime checks
+  to opensagetv-vibe-xmltv-Plugin. Established JAR/component/image labels and
+  runtime bootstrap stay unchanged; syntax/source-path contracts pass. No
+  image rebuild/replacement, appdata mutation or physical runtime claim.
+
 - 2026-10-08 pre-commit source-sync review: workflow policy only, no runtime
   image replacement or server restart. Four guarded-cleanup unit contracts and
   common workflow checks pass; existing hardware/runtime tasks remain open.

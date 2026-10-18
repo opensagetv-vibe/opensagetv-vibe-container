@@ -2,6 +2,10 @@
 
 ## Next
 
+- Follow the renamed opensagetv-vibe-xmltv-Plugin source/output checkout for
+  staging, builds, component updates and runtime validation. Retain existing
+  JAR/component identifiers and runtime behavior; no image replacement.
+
 - Made canonical-and-Vibe current-Ubuntu validation the top container priority.
   Documented the required `google/sagetv` Core approvals (#516, #519, #528,
   and separable #529 changes), the stock-Core runtime lane, and the later
