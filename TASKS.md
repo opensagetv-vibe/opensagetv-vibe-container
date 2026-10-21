@@ -9,6 +9,7 @@ This is the only active container backlog. Completed work moves to the
 checklist change ledger; release evidence is also recorded in `CHANGELOG.md`
 and `HANDOFF.md`.
 
+
 - [ ] TOP PRIORITY: validate one current-Ubuntu runtime design with both a
   canonical stock SageTV Core payload and the Vibe Core payload. Prove clean
   non-root startup, PID/supervisor behavior, Java 11, UDP/TCP services,
@@ -21,6 +22,11 @@ and `HANDOFF.md`.
   deterministic software fallback after hardware initialization failure.
 
 ## Checklist change ledger
+
+- [x] **PLUGIN-RENAME-001 (2026-10-21):** XMLTV source paths use canonical
+  Xmltv-Plugin casing; FFmpeg documentation links use FFmpeg-Plugin. Six host
+  source/helper tests pass; runtime JAR/plugin IDs, images and settings unchanged.
+  No server restart or hardware retest required for source-path metadata.
 
 - [x] **XMLTV-PLUGIN-002 source dependency (2026-10-18).** Update five
   default sibling source/output paths for build/stage/update/runtime checks

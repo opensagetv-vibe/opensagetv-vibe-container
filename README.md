@@ -57,7 +57,7 @@ for an intentional runtime-baseline refresh.
 ```
 
 The same update path supports `core`, `xmltv`, `tmdb`, and `comskip`. The FFmpeg
-runtime is installed and updated through `opensagetv-vibe-SageTVFFmpegPlugin`,
+runtime is installed and updated through `opensagetv-vibe-FFmpeg-Plugin`,
 not as a container component. The component path verifies
 hashes, stops only the selected test container, backs up replaced files,
 installs atomically under appdata, restarts the container, and runs a

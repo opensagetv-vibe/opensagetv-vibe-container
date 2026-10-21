@@ -1,5 +1,12 @@
 # Container handoff
 
+## Canonical plugin names (2026-10-21)
+
+PLUGIN-RENAME-001 updates Xmltv-Plugin source dependencies and FFmpeg-Plugin
+documentation links. Six source/helper tests pass. Existing runtime XMLTV JAR,
+plugin IDs, images, settings and servers are unchanged; this source integration
+does not require a runtime-image replacement or replay of hardware gates.
+
 ## XMLTV source rename (2026-10-18)
 
 Default XMLTV_SOURCE/XMLTV_OUTPUT paths now follow the renamed sibling

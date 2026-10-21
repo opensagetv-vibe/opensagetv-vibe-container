@@ -3,7 +3,7 @@ set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 core_package="${CORE_PACKAGE:-$root/../opensagetv-vibe-core/output/packages/sagetv-server-x86_64.tar.gz}"
-xmltv_output="${XMLTV_OUTPUT:-$root/../opensagetv-vibe-xmltv-Plugin/output}"
+xmltv_output="${XMLTV_OUTPUT:-$root/../opensagetv-vibe-Xmltv-Plugin/output}"
 core_mcp_output="${CORE_MCP_OUTPUT:-$root/../opensagetv-vibe-core-MCP-Plugin/output}"
 core_mcp_source="${CORE_MCP_SOURCE:-$root/../opensagetv-vibe-core-MCP-Plugin}"
 core_mcp_version="$(sed -n 's/^VERSION=//p' "$core_mcp_source/release.properties")"

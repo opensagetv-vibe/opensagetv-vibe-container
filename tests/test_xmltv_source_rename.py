@@ -8,7 +8,7 @@ class XmltvRenameTests(unittest.TestCase):
         for name in ['build.ps1','build.sh','stage-artifacts.sh','scripts/create-component-update.sh','tests/runtime-validation.sh']:
             with self.subTest(file=name):
                 source=(ROOT/name).read_text()
-                self.assertIn('opensagetv-vibe-xmltv-Plugin',source)
+                self.assertIn('opensagetv-vibe-Xmltv-Plugin',source)
                 self.assertNotIn('opensagetv-vibe-xmltv-import',source)
     def test_runtime_identity_and_legacy_seed_unchanged(self):
         self.assertIn('XMLTVImportPlugin.jar',(ROOT/'stage-artifacts.sh').read_text())

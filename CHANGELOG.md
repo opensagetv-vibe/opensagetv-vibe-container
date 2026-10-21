@@ -1,5 +1,9 @@
 # Change Log
 
+- 2026-10-21: follow canonical Xmltv-Plugin source casing and FFmpeg-Plugin
+  links; preserve runtime identities. Six source/helper checks pass, no images
+  rebuilt or servers restarted.
+
 ## Next
 
 - Follow the renamed opensagetv-vibe-xmltv-Plugin source/output checkout for

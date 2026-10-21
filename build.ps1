@@ -6,7 +6,7 @@ $debugImage = if ($env:OPENSAGETV_VIBE_SERVER_DEBUG_IMAGE) { $env:OPENSAGETV_VIB
 if (-not (Test-Path -LiteralPath $core)) { throw "Missing Core package: $core" }
 New-Item -ItemType Directory -Force -Path (Join-Path $root 'artifacts') | Out-Null
 Copy-Item -LiteralPath $core -Destination (Join-Path $root 'artifacts\sagetv-server-x86_64.tar.gz') -Force
-$xmltv = Join-Path $root '..\opensagetv-vibe-xmltv-Plugin\output'
+$xmltv = Join-Path $root '..\opensagetv-vibe-Xmltv-Plugin\output'
 if (-not (Test-Path "$xmltv\packages\XMLTVImportPlugin.jar")) { throw "Missing XMLTV output: $xmltv" }
 $coreMcp = if ($env:CORE_MCP_OUTPUT) { $env:CORE_MCP_OUTPUT } else { Join-Path $root '..\opensagetv-vibe-core-MCP-Plugin\output' }
 $coreMcpSource = if ($env:CORE_MCP_SOURCE) { $env:CORE_MCP_SOURCE } else { Join-Path $root '..\opensagetv-vibe-core-MCP-Plugin' }

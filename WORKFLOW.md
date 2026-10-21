@@ -56,7 +56,7 @@ are written under `output/component-updates` with a SHA-256 sidecar.
 
 FFmpeg/MIM is intentionally not a container component. Build its runtime in
 `opensagetv-vibe-ffmpeg-mim` and install/update it through
-`opensagetv-vibe-SageTVFFmpegPlugin`. The plugin owns `SageTVTranscoder` and
+`opensagetv-vibe-FFmpeg-Plugin`. The plugin owns `SageTVTranscoder` and
 `plugins/SageTVFFmpegPlugin/runtime`; the container retains stock `ffmpeg` as
 the no-plugin and failure fallback.
 
